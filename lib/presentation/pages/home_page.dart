@@ -13,10 +13,10 @@ class HomePage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: const Text(
-          'SwiftSoko',
+          'SwiftIsoko',
           style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 24,
+            fontWeight: FontWeight.w500,
+            fontSize: 22,
             color: AppColors.primary,
           ),
         ),
@@ -36,84 +36,61 @@ class HomePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Welcome + Search
-            Text(
-              'Welcome back,\nOlivia',
-              style: Theme.of(context).textTheme.headlineSmall!.copyWith(
-                    fontWeight: FontWeight.bold,
-                    height: 1.2,
+            // Header: welcome + small search icon
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    'Welcome back,\nOlivia',
+                    style: Theme.of(context).textTheme.headlineSmall!.copyWith(
+                          fontWeight: FontWeight.bold,
+                          height: 1.1,
+                        ),
                   ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              decoration: InputDecoration(
-                hintText: 'Search...',
-                prefixIcon: const Icon(Icons.search),
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide.none,
                 ),
-              ),
+                Container(
+                  margin: const EdgeInsets.only(left: 8, top: 6),
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.06), blurRadius: 6)]),
+                  child: const Icon(Icons.search, color: AppColors.primary),
+                )
+              ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
             // Hero Banner
+            // Hero Banner (card style)
             Container(
-              height: 180,
+              height: 190,
               width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                image: const DecorationImage(
-                  image: AssetImage('assets/images/banner_macbook.jpg'), // add this image
-                  fit: BoxFit.cover,
-                ),
-              ),
-              child: Stack(
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.04), blurRadius: 10)]),
+              child: Row(
                 children: [
-                  Positioned(
-                    top: 20,
-                    left: 20,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Apple',
-                          style: TextStyle(color: Colors.white, fontSize: 14),
-                        ),
-                        const Text(
-                          'MacBook Pro M2',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: AppColors.primary,
-                          ),
-                          child: const Text('Shop Now'),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Positioned(
-                    right: 16,
-                    top: 16,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
-                        borderRadius: BorderRadius.circular(20),
+                  Expanded(
+                    flex: 6,
+                    child: Padding(
+                      padding: const EdgeInsets.all(18.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('Apple', style: TextStyle(color: AppColors.textLight)),
+                          const SizedBox(height: 8),
+                          const Text('MacBook Pro M2', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 12),
+                          const Text('Experience blazing speed and stunning efficiency with the MacBook Pro.' , style: TextStyle(color: AppColors.textLight, fontSize: 12)),
+                          const SizedBox(height: 12),
+                          ElevatedButton(onPressed: () {}, style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))), child: const Text('Buy Now'))
+                        ],
                       ),
-                      child: const Text('Mura\nNeza', textAlign: TextAlign.center),
                     ),
                   ),
+                  Expanded(
+                    flex: 4,
+                    child: ClipRRect(borderRadius: const BorderRadius.horizontal(right: Radius.circular(20)), child: Image.asset('assets/images/macbook.png', fit: BoxFit.cover, height: double.infinity, errorBuilder: (_,__,___)=>Container(color: Colors.grey[200]))),
+                  )
                 ],
               ),
             ),
@@ -145,64 +122,25 @@ class HomePage extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            // Grid of items
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              childAspectRatio: 0.75,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              children: const [
-                _ProductCard(
-                  title: 'MacBook Air 13in',
-                  price: 1200,
-                  image: 'assets/images/macbook_air.jpg',
-                ),
-                _ProductCard(
-                  title: 'Nike Air Max',
-                  price: 74.50,
-                  image: 'assets/images/nike.jpg',
-                ),
-                _ProductCard(
-                  title: 'iPhone 15 Pro',
-                  price: 999,
-                  image: 'assets/images/iphone.jpg',
-                ),
-                _ProductCard(
-                  title: 'Glycine Watch',
-                  price: 81,
-                  image: 'assets/images/watch.jpg',
-                ),
-              ],
+            // New arrivals - horizontal list
+            SizedBox(
+              height: 170,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: _newArrivals.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 12),
+                itemBuilder: (context, index) {
+                  final item = _newArrivals[index];
+                  return _SmallCard(title: item['title']!, price: item['price']!, image: item['image']!);
+                },
+              ),
             ),
             const SizedBox(height: 80), // space for bottom nav
           ],
         ),
       ),
 
-      // Bottom Navigation (exact match)
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10),
-          ],
-        ),
-        child: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: Colors.grey,
-          currentIndex: 0,
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-            BottomNavigationBarItem(icon: Icon(Icons.category), label: 'Categories'),
-            BottomNavigationBarItem(icon: Icon(Icons.add_circle, size: 40), label: 'Sell'),
-            BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Cart'),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-          ],
-        ),
-      ),
+      // Note: Bottom navigation is provided by MainScreen's centralized BottomNav.
     );
   }
 
@@ -218,71 +156,45 @@ class HomePage extends StatelessWidget {
   }
 }
 
-// Product Card Widget
-class _ProductCard extends StatelessWidget {
+
+
+// small horizontal card used in new arrivals
+class _SmallCard extends StatelessWidget {
   final String title;
-  final double price;
+  final String price;
   final String image;
 
-  const _ProductCard({required this.title, required this.price, required this.image});
+  const _SmallCard({required this.title, required this.price, required this.image});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8)],
-      ),
+      width: 140,
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.04), blurRadius: 8)]),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                child: Image.asset(
-                  image,
-                  height: 140,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    height: 140,
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.image, size: 40),
-                  ),
-                ),
-              ),
-              const Positioned(
-                top: 8,
-                right: 8,
-                child: CircleAvatar(
-                  backgroundColor: Colors.white,
-                  child: Icon(Icons.favorite_border, size: 20),
-                ),
-              ),
-            ],
+          Expanded(
+            child: ClipRRect(borderRadius: const BorderRadius.vertical(top: Radius.circular(12)), child: Image.asset(image, width: double.infinity, fit: BoxFit.cover, errorBuilder: (_,__,___)=>Container(color: Colors.grey[200]))),
           ),
           Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-                const SizedBox(height: 4),
-                Text(
-                  '\$${price.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
-                    fontSize: 16,
-                  ),
-                ),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)), const SizedBox(height: 4), Text(price, style: const TextStyle(color: AppColors.textLight, fontSize: 12))])),
+                Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.add, color: Colors.white, size: 16)),
               ],
             ),
-          ),
+          )
         ],
       ),
     );
   }
 }
+
+// sample data for new arrivals
+final List<Map<String, String>> _newArrivals = [
+  {'title': 'MacBook Air 13in', 'price': '\$1,149.00', 'image': 'assets/images/macbook_air.jpg'},
+  {'title': 'Nike Air Max', 'price': '\$74.50', 'image': 'assets/images/nike.jpg'},
+  {'title': 'Canon Lens', 'price': '\$350.00', 'image': 'assets/images/lens.png'},
+];
