@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../core/constants/colors.dart';
+import '../widgets/animated_like.dart';
+import '../../data/likes_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -22,6 +24,15 @@ class _HomePageState extends State<HomePage> {
     {'title': 'Nike Air Max', 'subtitle': 'Nike', 'image': 'assets/images/nike.jpg'},
   ];
 
+  // likes keyed by title (simple local state for demo)
+  final Map<String, bool> _liked = {};
+
+  // search controls
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocus = FocusNode();
+  bool _showSearch = false;
+  String _searchQuery = '';
+
   @override
   void initState() {
     super.initState();
@@ -31,12 +42,27 @@ class _HomePageState extends State<HomePage> {
       _bannerController.animateToPage(next, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
       setState(() => _currentBanner = next);
     });
+    _loadLikes();
+  }
+
+  void _loadLikes() async {
+    final svc = await LikesService.getInstance();
+    final set = svc.getLikedSet();
+    if (!mounted) return;
+    setState(() {
+      for (final item in _newArrivals) {
+        final title = item['title'] as String;
+        _liked[title] = set.contains(title);
+      }
+    });
   }
 
   @override
   void dispose() {
     _bannerTimer?.cancel();
     _bannerController.dispose();
+    _searchController.dispose();
+    _searchFocus.dispose();
     super.dispose();
   }
 
@@ -47,6 +73,10 @@ class _HomePageState extends State<HomePage> {
       if (_selectedCategory != 'All' && cat != _selectedCategory) return false;
       if (_minPrice != null && price < _minPrice!) return false;
       if (_maxPrice != null && price > _maxPrice!) return false;
+      if (_searchQuery.isNotEmpty) {
+        final title = (item['title'] as String).toLowerCase();
+        if (!title.contains(_searchQuery.toLowerCase())) return false;
+      }
       return true;
     }).toList();
   }
@@ -95,12 +125,38 @@ class _HomePageState extends State<HomePage> {
                         ),
                   ),
                 ),
-                Container(
-                  margin: const EdgeInsets.only(left: 8, top: 6),
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.06), blurRadius: 6)]),
-                  child: const Icon(Icons.search, color: AppColors.primary),
+                MouseRegion(
+                  onEnter: (_) => setState(() => _showSearch = true),
+                  onExit: (_) {
+                    if (!_searchFocus.hasFocus) setState(() => _showSearch = false);
+                  },
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() => _showSearch = true);
+                      _searchFocus.requestFocus();
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      width: _showSearch ? 220 : 44,
+                      height: 44,
+                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.06), blurRadius: 6)]),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      alignment: Alignment.centerLeft,
+                      child: _showSearch
+                          ? Row(children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _searchController,
+                                  focusNode: _searchFocus,
+                                  decoration: const InputDecoration(border: InputBorder.none, hintText: 'Search...'),
+                                  onSubmitted: (v) { setState(() => _searchQuery = v); },
+                                ),
+                              ),
+                              IconButton(onPressed: () { setState(() { _searchController.clear(); _searchQuery = ''; _showSearch = false; }); }, icon: const Icon(Icons.close, size: 18)),
+                            ])
+                          : const Icon(Icons.search, color: AppColors.primary),
+                    ),
+                  ),
                 )
               ],
             ),
@@ -199,7 +255,19 @@ class _HomePageState extends State<HomePage> {
                 separatorBuilder: (_, __) => const SizedBox(width: 12),
                 itemBuilder: (context, index) {
                   final item = _filteredArrivals[index];
-                  return _SmallCard(title: item['title'] as String, price: item['price'] as String, image: item['image'] as String);
+                  final title = item['title'] as String;
+                  return _SmallCard(
+                    title: title,
+                    price: item['price'] as String,
+                    image: item['image'] as String,
+                    isLiked: _liked[title] ?? false,
+                    onLike: () async {
+                      final svc = await LikesService.getInstance();
+                      final newVal = await svc.toggleLiked(title);
+                      if (mounted) setState(() => _liked[title] = newVal);
+                    },
+                    onMore: () => _showMoreMenu(context, title),
+                  );
                 },
               ),
             ),
@@ -312,6 +380,21 @@ class _HomePageState extends State<HomePage> {
       }
     );
   }
+
+  void _showMoreMenu(BuildContext context, String title) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) {
+        return SafeArea(
+          child: Wrap(children: [
+            ListTile(leading: const Icon(Icons.info), title: const Text('View details'), onTap: () { Navigator.of(ctx).pop(); }),
+            ListTile(leading: const Icon(Icons.share), title: const Text('Share'), onTap: () { Navigator.of(ctx).pop(); }),
+            ListTile(leading: const Icon(Icons.cancel), title: const Text('Cancel'), onTap: () { Navigator.of(ctx).pop(); }),
+          ]),
+        );
+      }
+    );
+  }
 }
 
 
@@ -321,8 +404,11 @@ class _SmallCard extends StatelessWidget {
   final String title;
   final String price;
   final String image;
+  final bool isLiked;
+  final VoidCallback onLike;
+  final VoidCallback? onMore;
 
-  const _SmallCard({required this.title, required this.price, required this.image});
+  const _SmallCard({required this.title, required this.price, required this.image, this.isLiked = false, required this.onLike, this.onMore});
 
   @override
   Widget build(BuildContext context) {
@@ -333,7 +419,16 @@ class _SmallCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: ClipRRect(borderRadius: const BorderRadius.vertical(top: Radius.circular(12)), child: Image.asset(image, width: double.infinity, fit: BoxFit.cover, errorBuilder: (_,__,___)=>Container(color: Colors.grey[200]))),
+            child: Stack(
+              children: [
+                ClipRRect(borderRadius: const BorderRadius.vertical(top: Radius.circular(12)), child: Image.asset(image, width: double.infinity, fit: BoxFit.cover, errorBuilder: (_,__,___)=>Container(color: Colors.grey[200]))),
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: AnimatedLike(isLiked: isLiked, onTap: onLike),
+                ),
+              ],
+            ),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -341,6 +436,8 @@ class _SmallCard extends StatelessWidget {
               children: [
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)), const SizedBox(height: 4), Text(price, style: const TextStyle(color: AppColors.textLight, fontSize: 12))])),
                 Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.add, color: Colors.white, size: 16)),
+                const SizedBox(width: 6),
+                GestureDetector(onTap: onMore, child: const Icon(Icons.more_vert, size: 18, color: AppColors.textLight)),
               ],
             ),
           )
