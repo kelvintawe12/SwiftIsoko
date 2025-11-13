@@ -17,6 +17,9 @@ dependencies:
   dotted_border: ^2.1.0
   intl: ^0.19.0
 
+  # Firbase Depenencies
+  cloud_firestore: ^6.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
