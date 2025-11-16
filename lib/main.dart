@@ -1,9 +1,16 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'presentation/app.dart';
 import 'core/constants/colors.dart';
 
-void main() {
+void main() async {
+  // makes sure Flutter’s engine and widget system are fully
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
+  await Firebase.initializeApp();
+
   runApp(const SwapItApp());
 }
 

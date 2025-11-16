@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>543028937998-6l9cdavmposcis9ohc4nu1pbfoe32guj.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.543028937998-6l9cdavmposcis9ohc4nu1pbfoe32guj</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>543028937998-eaf5omcj4dv1d87ik9u6u38ef385r72d.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBtD1qzJfhzpiBiHC2U4cq8AM9DUu-YXsw</string>
+	<key>GCM_SENDER_ID</key>
+	<string>543028937998</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.swapitMarketplace</string>
+	<key>PROJECT_ID</key>
+	<string>swift-isoko</string>
+	<key>STORAGE_BUCKET</key>
+	<string>swift-isoko.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:543028937998:ios:527f0c18aebfc1c93c035f</string>
+</dict>
+</plist>
