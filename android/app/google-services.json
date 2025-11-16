@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "543028937998",
+    "project_id": "swift-isoko",
+    "storage_bucket": "swift-isoko.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:543028937998:android:85ece2eabc73128a3c035f",
+        "android_client_info": {
+          "package_name": "com.example.swapit_marketplace"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "543028937998-eaf5omcj4dv1d87ik9u6u38ef385r72d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.swapit_marketplace",
+            "certificate_hash": "9e93bad010ad7f608073a6876a4bc300c174cb97"
+          }
+        },
+        {
+          "client_id": "543028937998-m9p6hdmd33ad3v0avi7qprt6nu8avlo3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMyrBKPXgqBv_grl3oc0iaq67hWOHXy-Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "543028937998-m9p6hdmd33ad3v0avi7qprt6nu8avlo3.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "543028937998-6l9cdavmposcis9ohc4nu1pbfoe32guj.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.swapitMarketplace"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
