@@ -5,7 +5,7 @@ import '../../core/constants/colors.dart';
 class AnimatedLike extends StatefulWidget {
   final bool isLiked;
   final VoidCallback onTap;
-  const AnimatedLike({Key? key, required this.isLiked, required this.onTap}) : super(key: key);
+  const AnimatedLike({super.key, required this.isLiked, required this.onTap});
 
   @override
   State<AnimatedLike> createState() => _AnimatedLikeState();

@@ -510,7 +510,7 @@ class _ProfilePageState extends State<ProfilePage> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setStateSheet) {
-            Future<void> _pickAvatar() async {
+            Future<void> pickAvatar() async {
               final picked = await _picker.pickImage(
                 source: ImageSource.gallery,
                 imageQuality: 80,
@@ -583,7 +583,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           right: -4,
                           bottom: -4,
                           child: GestureDetector(
-                            onTap: _pickAvatar,
+                            onTap: pickAvatar,
                             child: Container(
                               decoration: const BoxDecoration(
                                 color: AppColors.primary,
@@ -638,13 +638,13 @@ class _ProfilePageState extends State<ProfilePage> {
                                 : bioCtrl.text.trim(),
                           );
                           await _loadProfile();
-                          if (mounted) {
-                            Navigator.of(ctx).pop();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text('Profile updated')),
-                            );
-                          }
+                          if (!ctx.mounted) return;
+                          Navigator.of(ctx).pop();
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('Profile updated')),
+                          );
                         },
                         child: const Text('Save'),
                       ),

@@ -47,18 +47,24 @@ class CartPage extends StatelessWidget {
                         children: [
                           ClipRRect(
                             borderRadius: BorderRadius.circular(6),
-                            child: SizedBox(width: 72, height: 72, child: Image.asset(item.listing.imageUrl, fit: BoxFit.cover)),
+                            child: SizedBox(
+                              width: 72,
+                              height: 72,
+                              child: item.product != null && item.product!.imageUrls.isNotEmpty
+                                  ? Image.network(item.product!.imageUrls.first, fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => const Icon(Icons.image))
+                                  : const Icon(Icons.image),
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(item.listing.title, style: const TextStyle(fontWeight: FontWeight.w600)),
+                                Text(item.productName ?? 'Product', style: const TextStyle(fontWeight: FontWeight.w600)),
                                 const SizedBox(height: 6),
-                                Text('${item.listing.views} views', style: const TextStyle(color: AppColors.textLight, fontSize: 12)),
+                                if (item.product != null) Text(item.product!.condition, style: const TextStyle(color: AppColors.textLight, fontSize: 12)),
                                 const SizedBox(height: 8),
-                                Text('\$${item.listing.price.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                Text('${item.product?.currency ?? 'RWF'} ${item.priceAtAdd.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold)),
                               ],
                             ),
                           ),
@@ -72,7 +78,9 @@ class CartPage extends StatelessWidget {
                                 InkWell(
                                     onTap: () {
                                       // decrease quantity
-                                      context.read<CartBloc>().add(DecreaseQuantity(item.listing));
+                                      if (item.product != null) {
+                                        context.read<CartBloc>().add(DecreaseQuantity(item.product!));
+                                      }
                                     },
                                     child: const CircleAvatar(radius: 12, backgroundColor: Colors.white, child: Icon(Icons.remove, size: 16))),
                                 const SizedBox(width: 8),
@@ -81,7 +89,9 @@ class CartPage extends StatelessWidget {
                                 InkWell(
                                     onTap: () {
                                       // increase quantity
-                                      context.read<CartBloc>().add(AddToCart(item.listing));
+                                      if (item.product != null) {
+                                        context.read<CartBloc>().add(AddToCart(item.product!));
+                                      }
                                     },
                                     child: const CircleAvatar(radius: 12, backgroundColor: Colors.white, child: Icon(Icons.add, size: 16))),
                               ],

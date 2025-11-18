@@ -10,7 +10,7 @@ class CartInitial extends CartState {}
 class CartLoaded extends CartState {
   final List<CartItem> items;
   const CartLoaded({this.items = const []});
-  double get total => items.fold(0.0, (sum, item) => sum + item.listing.price * item.quantity);
+  double get total => items.fold(0.0, (sum, item) => sum + item.priceAtAdd * item.quantity);
   @override
   List<Object> get props => [items];
 }

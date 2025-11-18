@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../data/models/listing.dart';
+import '../../data/models/product.dart';
 import '../widgets/animated_like.dart';
 import '../../data/likes_service.dart';
  
@@ -7,9 +7,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/cart/cart_bloc.dart';
 
 class ListingCard extends StatefulWidget {
-  final Listing listing;
+  final Product product;
   final bool showRemove;
-  const ListingCard({super.key, required this.listing, this.showRemove = false});
+  const ListingCard({super.key, required this.product, this.showRemove = false});
 
   @override
   State<ListingCard> createState() => _ListingCardState();
@@ -26,13 +26,13 @@ class _ListingCardState extends State<ListingCard> {
 
   void _loadLiked() async {
     final svc = await LikesService.getInstance();
-    final liked = await svc.isLiked(widget.listing.id);
+    final liked = await svc.isLiked(widget.product.id);
     if (mounted) setState(() => _isLiked = liked);
   }
 
   void _toggleLike() async {
     final svc = await LikesService.getInstance();
-    final newVal = await svc.toggleLiked(widget.listing.id);
+    final newVal = await svc.toggleLiked(widget.product.id);
     if (mounted) setState(() => _isLiked = newVal);
   }
 
@@ -41,9 +41,14 @@ class _ListingCardState extends State<ListingCard> {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
-        leading: SizedBox(width: 60, child: Image.asset(widget.listing.imageUrl, fit: BoxFit.cover)),
-        title: Text(widget.listing.title),
-        subtitle: Text('\$${widget.listing.price.toStringAsFixed(2)}'),
+        leading: SizedBox(
+          width: 60,
+          child: widget.product.imageUrls.isNotEmpty
+              ? Image.network(widget.product.imageUrls.first, fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => const Icon(Icons.image))
+              : const Icon(Icons.image),
+        ),
+        title: Text(widget.product.name),
+        subtitle: Text('${widget.product.currency} ${widget.product.price.toStringAsFixed(2)}'),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -53,13 +58,13 @@ class _ListingCardState extends State<ListingCard> {
                 ? IconButton(
                     icon: const Icon(Icons.delete_forever),
                     onPressed: () {
-                      context.read<CartBloc>().add(RemoveFromCart(widget.listing));
+                      context.read<CartBloc>().add(RemoveFromCart(widget.product));
                     },
                   )
                 : IconButton(
                     icon: const Icon(Icons.add_shopping_cart),
                     onPressed: () {
-                      context.read<CartBloc>().add(AddToCart(widget.listing));
+                      context.read<CartBloc>().add(AddToCart(widget.product));
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Added to cart')));
                     },
                   ),

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'product.dart';
 
 class CartItem {
   final String id;
@@ -8,6 +9,7 @@ class CartItem {
   final double priceAtAdd;
   final int quantity;
   final DateTime createdAt;
+  final Product? product;
 
   CartItem({
     required this.id,
@@ -17,6 +19,7 @@ class CartItem {
     required this.priceAtAdd,
     this.quantity = 1,
     required this.createdAt,
+    this.product,
   });
 
   factory CartItem.fromMap(Map<String, dynamic> map, String id) {
@@ -46,6 +49,7 @@ class CartItem {
 
   CartItem copyWith({
     int? quantity,
+    Product? product,
   }) {
     return CartItem(
       id: id,
@@ -55,6 +59,7 @@ class CartItem {
       priceAtAdd: priceAtAdd,
       quantity: quantity ?? this.quantity,
       createdAt: createdAt,
+      product: product ?? this.product,
     );
   }
 }
