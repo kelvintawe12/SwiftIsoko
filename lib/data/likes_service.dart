@@ -36,7 +36,11 @@ class LikesService {
 
   Future<void> setLiked(String id, bool liked) async {
     final set = getLikedSet();
-    if (liked) set.add(id); else set.remove(id);
+    if (liked) {
+      set.add(id);
+    } else {
+      set.remove(id);
+    }
     await _prefs.setStringList(_kKey, set.toList());
   }
 }

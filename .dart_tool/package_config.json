@@ -122,6 +122,18 @@
       "languageVersion": "3.8"
     },
     {
+      "name": "ci",
+      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/ci-0.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "cli_util",
+      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/cli_util-0.4.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
       "name": "clock",
       "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/clock-1.1.2",
       "packageUri": "lib/",
@@ -200,6 +212,18 @@
       "languageVersion": "3.4"
     },
     {
+      "name": "custom_lint",
+      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/custom_lint-0.7.6",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "custom_lint_builder",
+      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/custom_lint_builder-0.7.6",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
       "name": "custom_lint_core",
       "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/custom_lint_core-0.7.5",
       "packageUri": "lib/",
@@ -216,6 +240,18 @@
       "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/dart_style-3.1.1",
       "packageUri": "lib/",
       "languageVersion": "3.7"
+    },
+    {
+      "name": "dartz",
+      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/dartz-0.10.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "dbus",
+      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/dbus-0.7.11",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
     },
     {
       "name": "dio",
@@ -320,6 +356,24 @@
       "languageVersion": "3.4"
     },
     {
+      "name": "firebase_messaging",
+      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/firebase_messaging-15.2.10",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "firebase_messaging_platform_interface",
+      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/firebase_messaging_platform_interface-4.6.10",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "firebase_messaging_web",
+      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/firebase_messaging_web-3.10.10",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
       "name": "fixnum",
       "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/fixnum-1.1.1",
       "packageUri": "lib/",
@@ -342,6 +396,24 @@
       "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/flutter_lints-5.0.0",
       "packageUri": "lib/",
       "languageVersion": "3.5"
+    },
+    {
+      "name": "flutter_local_notifications",
+      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/flutter_local_notifications-16.3.3",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
+    },
+    {
+      "name": "flutter_local_notifications_linux",
+      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/flutter_local_notifications_linux-4.0.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
+    },
+    {
+      "name": "flutter_local_notifications_platform_interface",
+      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/flutter_local_notifications_platform_interface-7.2.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
     },
     {
       "name": "flutter_plugin_android_lifecycle",
@@ -399,39 +471,45 @@
     },
     {
       "name": "google_sign_in",
-      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/google_sign_in-7.2.0",
+      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/google_sign_in-6.3.0",
       "packageUri": "lib/",
-      "languageVersion": "3.7"
+      "languageVersion": "3.6"
     },
     {
       "name": "google_sign_in_android",
-      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/google_sign_in_android-7.2.4",
+      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/google_sign_in_android-6.2.1",
       "packageUri": "lib/",
-      "languageVersion": "3.9"
+      "languageVersion": "3.6"
     },
     {
       "name": "google_sign_in_ios",
-      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/google_sign_in_ios-6.2.3",
+      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/google_sign_in_ios-5.9.0",
       "packageUri": "lib/",
-      "languageVersion": "3.9"
+      "languageVersion": "3.4"
     },
     {
       "name": "google_sign_in_platform_interface",
-      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/google_sign_in_platform_interface-3.1.0",
+      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/google_sign_in_platform_interface-2.5.0",
       "packageUri": "lib/",
-      "languageVersion": "3.7"
+      "languageVersion": "3.4"
     },
     {
       "name": "google_sign_in_web",
-      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/google_sign_in_web-1.1.0",
+      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/google_sign_in_web-0.12.4+4",
       "packageUri": "lib/",
-      "languageVersion": "3.7"
+      "languageVersion": "3.4"
     },
     {
       "name": "graphs",
       "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/graphs-2.3.2",
       "packageUri": "lib/",
       "languageVersion": "3.4"
+    },
+    {
+      "name": "hotreloader",
+      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/hotreloader-4.3.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
     },
     {
       "name": "http",
@@ -578,6 +656,12 @@
       "languageVersion": "3.2"
     },
     {
+      "name": "mockito",
+      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/mockito-5.4.6",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
+    },
+    {
       "name": "octo_image",
       "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/octo_image-2.1.0",
       "packageUri": "lib/",
@@ -644,6 +728,12 @@
       "languageVersion": "3.2"
     },
     {
+      "name": "petitparser",
+      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/petitparser-7.0.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.8"
+    },
+    {
       "name": "platform",
       "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/platform-3.1.6",
       "packageUri": "lib/",
@@ -694,6 +784,12 @@
     {
       "name": "riverpod_generator",
       "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/riverpod_generator-2.6.5",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
+    },
+    {
+      "name": "riverpod_lint",
+      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/riverpod_lint-2.6.5",
       "packageUri": "lib/",
       "languageVersion": "2.17"
     },
@@ -860,6 +956,12 @@
       "languageVersion": "2.12"
     },
     {
+      "name": "timezone",
+      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/timezone-0.9.4",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
+    },
+    {
       "name": "timing",
       "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/timing-1.0.2",
       "packageUri": "lib/",
@@ -918,6 +1020,12 @@
       "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/xdg_directories-1.1.0",
       "packageUri": "lib/",
       "languageVersion": "3.3"
+    },
+    {
+      "name": "xml",
+      "rootUri": "file:///Users/ntwarimikeck/.pub-cache/hosted/pub.dev/xml-6.6.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.8"
     },
     {
       "name": "yaml",
