@@ -1,0 +1,221 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:swapit_marketplace/data/models/cart.dart';
+import 'package:swapit_marketplace/data/models/cart_item.dart';
+import 'package:swapit_marketplace/data/models/chat.dart';
+import 'package:swapit_marketplace/data/models/message.dart';
+import 'package:swapit_marketplace/data/models/order.dart';
+import 'package:swapit_marketplace/data/models/person.dart';
+import 'package:swapit_marketplace/data/models/person_rating_model.dart';
+import 'package:swapit_marketplace/data/models/product.dart';
+import 'package:swapit_marketplace/data/models/reviews.dart';
+import 'package:swapit_marketplace/data/services/auth_services.dart';
+import 'package:swapit_marketplace/data/services/cart_services.dart';
+import 'package:swapit_marketplace/data/services/cloudinary_services.dart';
+import 'package:swapit_marketplace/data/services/order_services.dart';
+import 'package:swapit_marketplace/data/services/review_and_chat_services.dart';
+import '../services/user_services.dart';
+import '../services/product_services.dart';
+
+// Service Providers
+final authServiceProvider = Provider<AuthService>((ref) => AuthService());
+final userServiceProvider = Provider<UserService>((ref) => UserService());
+final productServiceProvider =
+    Provider<ProductService>((ref) => ProductService());
+final cartServiceProvider = Provider<CartService>((ref) => CartService());
+final orderServiceProvider = Provider<OrderService>((ref) => OrderService());
+final reviewServiceProvider = Provider<ReviewService>((ref) => ReviewService());
+final chatServiceProvider = Provider<ChatService>((ref) => ChatService());
+final cloudinaryServiceProvider =
+    Provider<CloudinaryService>((ref) => CloudinaryService());
+
+// Auth State Provider
+final authStateProvider = StreamProvider<User?>((ref) {
+  final authService = ref.watch(authServiceProvider);
+  return authService.authStateChanges;
+});
+
+// Current User Provider
+final currentUserProvider = StreamProvider<UserModel?>((ref) {
+  final authState = ref.watch(authStateProvider);
+
+  return authState.when(
+    data: (user) {
+      if (user == null) {
+        return Stream.value(null);
+      }
+      final userService = ref.watch(userServiceProvider);
+      return userService.getUserStream(user.uid);
+    },
+    loading: () => Stream.value(null),
+    error: (_, __) => Stream.value(null),
+  );
+});
+
+// Current User ID Provider
+final currentUserIdProvider = Provider<String?>((ref) {
+  final authState = ref.watch(authStateProvider);
+  return authState.maybeWhen(
+    data: (user) => user?.uid,
+    orElse: () => null,
+  );
+});
+
+// User Products Provider
+final userProductsProvider = StreamProvider.family<List<ProductModel>, String>(
+  (ref, userId) {
+    final productService = ref.watch(productServiceProvider);
+    return productService.getUserProducts(userId);
+  },
+);
+
+// Products Stream Provider
+final productsStreamProvider =
+    StreamProvider.autoDispose<List<ProductModel>>((ref) {
+  final productService = ref.watch(productServiceProvider);
+  return productService.getProductsStream(
+    status: ProductStatus.active,
+    limit: 50,
+  );
+});
+
+// Products by Category Provider
+final productsByCategoryProvider = StreamProvider.family
+    .autoDispose<List<ProductModel>, String>((ref, category) {
+  final productService = ref.watch(productServiceProvider);
+  return productService.getProductsStream(
+    category: category,
+    status: ProductStatus.active,
+    limit: 50,
+  );
+});
+
+// Single Product Provider
+final productProvider = FutureProvider.family.autoDispose<ProductModel, String>(
+  (ref, productId) async {
+    final productService = ref.watch(productServiceProvider);
+    final result = await productService.getProductById(productId);
+
+    return result.fold(
+      (failure) => throw Exception(failure.message),
+      (product) => product,
+    );
+  },
+);
+
+// Current User Cart Provider
+final currentUserCartProvider =
+    FutureProvider.autoDispose<CartModel?>((ref) async {
+  final userId = ref.watch(currentUserIdProvider);
+
+  if (userId == null) {
+    return null;
+  }
+
+  final cartService = ref.watch(cartServiceProvider);
+  final result = await cartService.getOrCreateCart(userId);
+
+  return result.fold(
+    (failure) => null,
+    (cart) => cart,
+  );
+});
+
+// Cart Items Provider
+final cartItemsProvider = StreamProvider.family
+    .autoDispose<List<CartItemModel>, String>((ref, cartId) {
+  final cartService = ref.watch(cartServiceProvider);
+  return cartService.getCartItems(cartId);
+});
+
+// Cart Total Provider
+final cartTotalProvider = FutureProvider.family.autoDispose<double, String>(
+  (ref, cartId) async {
+    final cartService = ref.watch(cartServiceProvider);
+    final result = await cartService.getCartTotal(cartId);
+
+    return result.fold(
+      (failure) => 0.0,
+      (total) => total,
+    );
+  },
+);
+
+// User Orders Provider
+final userOrdersProvider = StreamProvider.autoDispose<List<OrderModel>>((ref) {
+  final userId = ref.watch(currentUserIdProvider);
+
+  if (userId == null) {
+    return Stream.value([]);
+  }
+
+  final orderService = ref.watch(orderServiceProvider);
+  return orderService.getUserOrders(userId);
+});
+
+// Single Order Provider
+final orderProvider = FutureProvider.family.autoDispose<OrderModel, String>(
+  (ref, orderId) async {
+    final orderService = ref.watch(orderServiceProvider);
+    final result = await orderService.getOrderById(orderId);
+
+    return result.fold(
+      (failure) => throw Exception(failure.message),
+      (order) => order,
+    );
+  },
+);
+
+// Product Reviews Provider
+final productReviewsProvider = StreamProvider.family
+    .autoDispose<List<ReviewModel>, String>((ref, productId) {
+  final reviewService = ref.watch(reviewServiceProvider);
+  return reviewService.getProductReviews(productId);
+});
+
+// User Ratings Provider
+final userRatingsProvider = StreamProvider.family
+    .autoDispose<List<UserRatingModel>, String>((ref, userId) {
+  final reviewService = ref.watch(reviewServiceProvider);
+  return reviewService.getUserRatings(userId);
+});
+
+// User Chats Provider
+final userChatsProvider = StreamProvider.autoDispose<List<ChatModel>>((ref) {
+  final userId = ref.watch(currentUserIdProvider);
+
+  if (userId == null) {
+    return Stream.value([]);
+  }
+
+  final chatService = ref.watch(chatServiceProvider);
+  return chatService.getUserChats(userId);
+});
+
+// Chat Messages Provider
+final chatMessagesProvider = StreamProvider.family
+    .autoDispose<List<MessageModel>, String>((ref, chatId) {
+  final chatService = ref.watch(chatServiceProvider);
+  return chatService.getChatMessages(chatId);
+});
+
+// Search Query State Provider
+final searchQueryProvider = StateProvider<String>((ref) => '');
+
+// Selected Category Provider
+final selectedCategoryProvider = StateProvider<String?>((ref) => null);
+
+// Product Categories Provider
+final productCategoriesProvider = Provider<List<String>>((ref) {
+  return [
+    'Fashion',
+    'Furniture',
+    'Accessories',
+    'Sports',
+    'Books',
+    'Toys',
+    'Beauty',
+    'Electronics',
+    'Others',
+  ];
+});

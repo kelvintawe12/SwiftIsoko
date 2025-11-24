@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:equatable/equatable.dart';
 
 class Chat {
   final String id;
@@ -51,4 +52,36 @@ class Chat {
       lastUpdated: lastUpdated ?? DateTime.now(),
     );
   }
+}
+
+// Chat Model
+class ChatModel extends Equatable {
+  final String id;
+  final List<String> participants;
+  final DateTime lastMessageAt;
+
+  const ChatModel({
+    required this.id,
+    required this.participants,
+    required this.lastMessageAt,
+  });
+
+  factory ChatModel.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return ChatModel(
+      id: doc.id,
+      participants: List<String>.from(data['participants'] ?? []),
+      lastMessageAt: (data['lastMessageAt'] as Timestamp).toDate(),
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'participants': participants,
+      'lastMessageAt': Timestamp.fromDate(lastMessageAt),
+    };
+  }
+
+  @override
+  List<Object?> get props => [id, participants, lastMessageAt];
 }

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:equatable/equatable.dart';
 
-class Person {
+class UserModel extends Equatable {
   final String uid;
   final String name;
   final String email;
@@ -8,12 +9,12 @@ class Person {
   final String? phoneNumber;
   final String? profileImageUrl;
   final String? bio;
-  final String location;
+  final String? location;
   final double ratingAverage;
   final int numRatings;
   final DateTime createdAt;
 
-  Person({
+  const UserModel({
     required this.uid,
     required this.name,
     required this.email,
@@ -21,30 +22,32 @@ class Person {
     this.phoneNumber,
     this.profileImageUrl,
     this.bio,
-    required this.location,
+    this.location,
     this.ratingAverage = 0.0,
     this.numRatings = 0,
     required this.createdAt,
   });
 
-  factory Person.fromMap(Map<String, dynamic> map, String uid) {
-    return Person(
-      uid: uid,
-      name: map['name'] ?? '',
-      email: map['email'] ?? '',
-      isEmailVerified: map['isEmailVerified'] ?? false,
-      phoneNumber: map['phoneNumber'],
-      profileImageUrl: map['profileImageUrl'],
-      bio: map['bio'],
-      location: map['location'] ?? '',
-      ratingAverage: (map['ratingAverage'] ?? 0.0).toDouble(),
-      numRatings: map['numRatings'] ?? 0,
-      createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+  factory UserModel.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return UserModel(
+      uid: doc.id,
+      name: data['name'] ?? '',
+      email: data['email'] ?? '',
+      isEmailVerified: data['isEmailVerified'] ?? false,
+      phoneNumber: data['phoneNumber'],
+      profileImageUrl: data['profileImageUrl'],
+      bio: data['bio'],
+      location: data['location'],
+      ratingAverage: (data['ratingAverage'] ?? 0.0).toDouble(),
+      numRatings: data['numRatings'] ?? 0,
+      createdAt: (data['createdAt'] as Timestamp).toDate(),
     );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toFirestore() {
     return {
+      'uid': uid,
       'name': name,
       'email': email,
       'isEmailVerified': isEmailVerified,
@@ -58,7 +61,7 @@ class Person {
     };
   }
 
-  Person copyWith({
+  UserModel copyWith({
     String? name,
     String? email,
     bool? isEmailVerified,
@@ -69,7 +72,7 @@ class Person {
     double? ratingAverage,
     int? numRatings,
   }) {
-    return Person(
+    return UserModel(
       uid: uid,
       name: name ?? this.name,
       email: email ?? this.email,
@@ -83,4 +86,19 @@ class Person {
       createdAt: createdAt,
     );
   }
+
+  @override
+  List<Object?> get props => [
+        uid,
+        name,
+        email,
+        isEmailVerified,
+        phoneNumber,
+        profileImageUrl,
+        bio,
+        location,
+        ratingAverage,
+        numRatings,
+        createdAt,
+      ];
 }

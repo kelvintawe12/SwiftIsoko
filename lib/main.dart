@@ -1,38 +1,77 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'presentation/app.dart';
-import 'core/constants/colors.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'presentation/splash_page.dart';
 
 void main() async {
-  // makes sure Flutter’s engine and widget system are fully
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Firebase
   await Firebase.initializeApp();
 
-  runApp(const SwapItApp());
+  runApp(
+    const ProviderScope(
+      child: SwiftIsokoApp(),
+    ),
+  );
 }
 
-class SwapItApp extends StatelessWidget {
-  const SwapItApp({super.key});
+class SwiftIsokoApp extends ConsumerWidget {
+  const SwiftIsokoApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-      title: 'SwapIt',
-      debugShowCheckedModeBanner: false,
+      title: 'SwiftIsoko',
       theme: ThemeData(
-        primaryColor: AppColors.primary,
-        scaffoldBackgroundColor: AppColors.background,
-        textTheme: GoogleFonts.poppinsTextTheme(),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.light,
+        ),
+        useMaterial3: true,
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
+          centerTitle: true,
           elevation: 0,
-          iconTheme: IconThemeData(color: AppColors.textDark),
+        ),
+        cardTheme: CardThemeData(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          filled: true,
         ),
       ),
-      home: const MainScreen(),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.dark,
+        ),
+        useMaterial3: true,
+        appBarTheme: const AppBarTheme(
+          centerTitle: true,
+          elevation: 0,
+        ),
+        cardTheme: CardThemeData(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          filled: true,
+        ),
+      ),
+      themeMode: ThemeMode.system,
+      home: const SplashScreen(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }

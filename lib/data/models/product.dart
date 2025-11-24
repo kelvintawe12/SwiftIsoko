@@ -15,14 +15,22 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 //   others
 // }
 
-class Product {
+import 'package:equatable/equatable.dart';
+
+enum ProductCondition { newItem, likeNew, used, damaged }
+
+enum ProductStatus { active, incart, sold, hidden }
+
+class ProductModel extends Equatable {
   final String id;
   final String name;
+  final String nameLower;
+  final List<String> searchKeywords;
   final List<String> imageUrls;
   final String category;
   final String description;
-  final String condition;
-  final String status;
+  final ProductCondition condition;
+  final ProductStatus status;
   final double price;
   final String currency;
   final String ownerId;
@@ -30,48 +38,55 @@ class Product {
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  Product({
+  const ProductModel({
     required this.id,
     required this.name,
+    required this.nameLower,
+    required this.searchKeywords,
     required this.imageUrls,
     required this.category,
     required this.description,
     required this.condition,
     required this.status,
     required this.price,
-    this.currency = 'RWF',
+    required this.currency,
     required this.ownerId,
     this.ownerName,
     required this.createdAt,
     required this.updatedAt,
-  }) : assert(imageUrls.length >= 2, 'A product must have at least 2 images');
+  });
 
-  factory Product.fromMap(Map<String, dynamic> map, String id) {
-    return Product(
-      id: id,
-      name: map['name'] ?? '',
-      imageUrls: List<String>.from(map['imageUrls'] ?? []),
-      category: map['category'],
-      description: map['description'] ?? '',
-      condition: map['condition'],
-      status: map['status'],
-      price: (map['price'] ?? 0.0).toDouble(),
-      currency: map['currency'] ?? 'RWF',
-      ownerId: map['ownerId'] ?? '',
-      ownerName: map['ownerName'],
-      createdAt: (map['createdAt'] as Timestamp).toDate(),
-      updatedAt: (map['updatedAt'] as Timestamp).toDate(),
+  factory ProductModel.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return ProductModel(
+      id: doc.id,
+      name: data['name'] ?? '',
+      nameLower: data['nameLower'] ?? '',
+      searchKeywords: List<String>.from(data['searchKeywords'] ?? []),
+      imageUrls: List<String>.from(data['imageUrls'] ?? []),
+      category: data['category'] ?? '',
+      description: data['description'] ?? '',
+      condition: _parseCondition(data['condition']),
+      status: _parseStatus(data['status']),
+      price: (data['price'] ?? 0.0).toDouble(),
+      currency: data['currency'] ?? 'RWF',
+      ownerId: data['ownerId'] ?? '',
+      ownerName: data['ownerName'],
+      createdAt: (data['createdAt'] as Timestamp).toDate(),
+      updatedAt: (data['updatedAt'] as Timestamp).toDate(),
     );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toFirestore() {
     return {
       'name': name,
+      'nameLower': nameLower,
+      'searchKeywords': searchKeywords,
       'imageUrls': imageUrls,
       'category': category,
       'description': description,
-      'condition': condition,
-      'status': status,
+      'condition': condition.name,
+      'status': status.name,
       'price': price,
       'currency': currency,
       'ownerId': ownerId,
@@ -81,21 +96,51 @@ class Product {
     };
   }
 
-  Product copyWith({
+  static ProductCondition _parseCondition(String? value) {
+    switch (value) {
+      case 'newItem':
+        return ProductCondition.newItem;
+      case 'likeNew':
+        return ProductCondition.likeNew;
+      case 'used':
+        return ProductCondition.used;
+      case 'damaged':
+        return ProductCondition.damaged;
+      default:
+        return ProductCondition.used;
+    }
+  }
+
+  static ProductStatus _parseStatus(String? value) {
+    switch (value) {
+      case 'active':
+        return ProductStatus.active;
+      case 'incart':
+        return ProductStatus.incart;
+      case 'sold':
+        return ProductStatus.sold;
+      case 'hidden':
+        return ProductStatus.hidden;
+      default:
+        return ProductStatus.active;
+    }
+  }
+
+  ProductModel copyWith({
     String? name,
     List<String>? imageUrls,
     String? category,
     String? description,
-    String? condition,
-    String? status,
+    ProductCondition? condition,
+    ProductStatus? status,
     double? price,
     String? currency,
-    String? ownerName,
-    DateTime? updatedAt,
   }) {
-    return Product(
+    return ProductModel(
       id: id,
       name: name ?? this.name,
+      nameLower: name?.toLowerCase() ?? nameLower,
+      searchKeywords: searchKeywords,
       imageUrls: imageUrls ?? this.imageUrls,
       category: category ?? this.category,
       description: description ?? this.description,
@@ -104,9 +149,28 @@ class Product {
       price: price ?? this.price,
       currency: currency ?? this.currency,
       ownerId: ownerId,
-      ownerName: ownerName ?? this.ownerName,
+      ownerName: ownerName,
       createdAt: createdAt,
-      updatedAt: updatedAt ?? DateTime.now(),
+      updatedAt: DateTime.now(),
     );
   }
+
+  @override
+  List<Object?> get props => [
+        id,
+        name,
+        nameLower,
+        searchKeywords,
+        imageUrls,
+        category,
+        description,
+        condition,
+        status,
+        price,
+        currency,
+        ownerId,
+        ownerName,
+        createdAt,
+        updatedAt,
+      ];
 }
