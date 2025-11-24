@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'listing.dart';
 
 class CartItem {
   final String id;
@@ -9,6 +10,7 @@ class CartItem {
   final double priceAtAdd;
   final int quantity;
   final DateTime createdAt;
+  final Listing listing; // Added for compatibility with UI
 
   CartItem({
     required this.id,
@@ -18,9 +20,24 @@ class CartItem {
     required this.priceAtAdd,
     this.quantity = 1,
     required this.createdAt,
-  });
+    Listing? listing,
+  }) : listing = listing ??
+            Listing(
+              id: productId,
+              title: productName ?? '',
+              price: priceAtAdd,
+              imageUrl: '',
+            );
 
   factory CartItem.fromMap(Map<String, dynamic> map, String id) {
+    // Create a simple listing from the map data
+    final listing = Listing(
+      id: map['productId'] ?? '',
+      title: map['productName'] ?? '',
+      price: (map['priceAtAdd'] ?? 0.0).toDouble(),
+      imageUrl: '',
+    );
+
     return CartItem(
       id: id,
       cartId: map['cartId'] ?? '',
@@ -29,6 +46,22 @@ class CartItem {
       priceAtAdd: (map['priceAtAdd'] ?? 0.0).toDouble(),
       quantity: map['quantity'] ?? 1,
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      listing: listing,
+    );
+  }
+
+  /// Create a CartItem from a Listing (for adding to cart from UI)
+  factory CartItem.fromListing(Listing listing,
+      {int quantity = 1, String cartId = ''}) {
+    return CartItem(
+      id: '', // Will be set when saved
+      cartId: cartId,
+      productId: listing.id,
+      productName: listing.title,
+      priceAtAdd: listing.price,
+      quantity: quantity,
+      createdAt: DateTime.now(),
+      listing: listing,
     );
   }
 
@@ -47,6 +80,7 @@ class CartItem {
 
   CartItem copyWith({
     int? quantity,
+    Listing? listing,
   }) {
     return CartItem(
       id: id,
@@ -56,8 +90,58 @@ class CartItem {
       priceAtAdd: priceAtAdd,
       quantity: quantity ?? this.quantity,
       createdAt: createdAt,
+      listing: listing ?? this.listing,
     );
   }
+}
+
+// Cart Item Model
+class CartItemModel extends Equatable {
+  final String id;
+  final String cartId;
+  final String productId;
+  final String? productName;
+  final double priceAtAdd;
+  final int quantity;
+  final DateTime createdAt;
+
+  const CartItemModel({
+    required this.id,
+    required this.cartId,
+    required this.productId,
+    this.productName,
+    required this.priceAtAdd,
+    required this.quantity,
+    required this.createdAt,
+  });
+
+  factory CartItemModel.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return CartItemModel(
+      id: doc.id,
+      cartId: data['cartId'] ?? '',
+      productId: data['productId'] ?? '',
+      productName: data['productName'],
+      priceAtAdd: (data['priceAtAdd'] ?? 0.0).toDouble(),
+      quantity: data['quantity'] ?? 1,
+      createdAt: (data['createdAt'] as Timestamp).toDate(),
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'cartId': cartId,
+      'productId': productId,
+      'productName': productName,
+      'priceAtAdd': priceAtAdd,
+      'quantity': quantity,
+      'createdAt': Timestamp.fromDate(createdAt),
+    };
+  }
+
+  @override
+  List<Object?> get props =>
+      [id, cartId, productId, productName, priceAtAdd, quantity, createdAt];
 }
 
 // Cart Item Model
