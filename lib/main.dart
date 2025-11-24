@@ -1,15 +1,23 @@
-import 'package:firebase_core/firebase_core.dart';
+// import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'presentation/app.dart';
+import 'presentation/pages/splash_screen.dart';
 import 'core/constants/colors.dart';
 
 void main() async {
-  // makes sure Flutter’s engine and widget system are fully
+  // makes sure Flutter's engine and widget system are fully
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
-  await Firebase.initializeApp();
+  // TODO: Configure Firebase for web platform
+  // Initialize Firebase only for supported platforms
+  // if (!kIsWeb) {
+  //   try {
+  //     await Firebase.initializeApp();
+  //   } catch (e) {
+  //     debugPrint('Firebase initialization error: $e');
+  //   }
+  // }
 
   runApp(const SwapItApp());
 }
@@ -32,7 +40,7 @@ class SwapItApp extends StatelessWidget {
           iconTheme: IconThemeData(color: AppColors.textDark),
         ),
       ),
-      home: const MainScreen(),
+      home: const SplashScreen(),
     );
   }
 }
