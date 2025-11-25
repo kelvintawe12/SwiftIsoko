@@ -330,20 +330,9 @@ class ProfileScreen extends ConsumerWidget {
                                                                     IconButton(
                                                                       icon: const Icon(Icons.bookmark_remove_outlined, color: Colors.red),
                                                                       onPressed: () async {
-                                                                        final userService = innerRef.read(userServiceProvider);
-                                                                        final favService = innerRef.read(favoriteServiceProvider);
-                                                                        // remove from both sources
-                                                                        final res1 = await userService.removeSavedProductId(user.uid, p.id);
-                                                                        final res2 = await favService.removeFavorite(user.uid, p.id);
-                                                                        res1.fold((f) {
-                                                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: ${f.message}'), backgroundColor: Colors.red));
-                                                                        }, (_) {});
-                                                                        res2.fold((f) {
-                                                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: ${f.message}'), backgroundColor: Colors.red));
-                                                                        }, (_) {});
-                                                                        // refresh providers
+                                                                        final notifier = innerRef.read(savedIdsNotifierProvider(user.uid).notifier);
+                                                                        await notifier.toggleSave(p.id);
                                                                         innerRef.invalidate(savedProductsProvider(user.uid));
-                                                                        innerRef.invalidate(favoritesSubcollectionProductsProvider(user.uid));
                                                                       },
                                                                     ),
                                                                   ],
@@ -392,25 +381,12 @@ class ProfileScreen extends ConsumerWidget {
                                                   title: Text(p.name),
                                                   subtitle: Text('${p.currency} ${p.price.toStringAsFixed(0)}'),
                                                   trailing: IconButton(
-                                                    icon: const Icon(Icons.delete_outline, color: Colors.red),
-                                                    onPressed: () async {
-                                                      final userService = innerRef.read(userServiceProvider);
-                                                      final favService = innerRef.read(favoriteServiceProvider);
-                                                      final res1 = await userService.removeSavedProductId(user.uid, p.id);
-                                                      final res2 = await favService.removeFavorite(user.uid, p.id);
-                                                      res1.fold((f) {
-                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: ${f.message}'), backgroundColor: Colors.red));
-                                                      }, (_) {
-                                                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Removed from saved (user doc)')));
-                                                      });
-                                                      res2.fold((f) {
-                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: ${f.message}'), backgroundColor: Colors.red));
-                                                      }, (_) {
-                                                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Removed from favorites (subcollection)')));
-                                                      });
-                                                      innerRef.invalidate(savedProductsProvider(user.uid));
-                                                      innerRef.invalidate(favoritesSubcollectionProductsProvider(user.uid));
-                                                    },
+                                                      icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                                      onPressed: () async {
+                                                        final notifier = innerRef.read(savedIdsNotifierProvider(user.uid).notifier);
+                                                        await notifier.toggleSave(p.id);
+                                                        innerRef.invalidate(savedProductsProvider(user.uid));
+                                                      },
                                                   ),
                                                   onTap: () {},
                                                 );

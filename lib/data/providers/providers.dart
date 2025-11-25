@@ -71,6 +71,50 @@ final favoritesSubcollectionProductsProvider = FutureProvider.family.autoDispose
   return products;
 });
 
+// Saved IDs Notifier - manages user's savedProductIds field (quick option)
+class SavedIdsNotifier extends StateNotifier<AsyncValue<List<String>>> {
+  final Ref ref;
+  final String userId;
+
+  SavedIdsNotifier(this.ref, this.userId) : super(const AsyncValue.loading()) {
+    _load();
+  }
+
+  Future<void> _load() async {
+    final userService = ref.read(userServiceProvider);
+    final res = await userService.getSavedProductIds(userId);
+    state = res.fold((_) => const AsyncValue.data(<String>[]), (ids) => AsyncValue.data(ids));
+  }
+
+  bool isSaved(String productId) {
+    return state.asData?.value.contains(productId) ?? false;
+  }
+
+  Future<void> toggleSave(String productId) async {
+    final userService = ref.read(userServiceProvider);
+    final currentlySaved = isSaved(productId);
+    // Optimistically update UI
+    final currentList = List<String>.from(state.asData?.value ?? []);
+    final updated = currentlySaved ? (currentList..remove(productId)) : (currentList..add(productId));
+    state = AsyncValue.data(List<String>.from(updated));
+
+    final result = currentlySaved
+        ? await userService.removeSavedProductId(userId, productId)
+        : await userService.addSavedProductId(userId, productId);
+
+    result.fold((failure) async {
+      // revert on failure
+      await _load();
+    }, (_) {
+      // nothing else; state already updated
+    });
+  }
+}
+
+final savedIdsNotifierProvider = StateNotifierProvider.family<SavedIdsNotifier, AsyncValue<List<String>>, String>((ref, userId) {
+  return SavedIdsNotifier(ref, userId);
+});
+
 // Auth State Provider
 final authStateProvider = StreamProvider<User?>((ref) {
   final authService = ref.watch(authServiceProvider);

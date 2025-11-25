@@ -2,7 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:swapit_marketplace/data/models/person.dart';
+import '../models/person.dart';
 import '../core/failures.dart';
 
 class AuthService {
@@ -30,11 +30,20 @@ class AuthService {
       );
 
       // Send verification email
-      await userCredential.user?.sendEmailVerification();
+      if (userCredential.user != null) {
+        await userCredential.user!.sendEmailVerification();
+      } else {
+        return const Left(AuthFailure('Failed to create user'));
+      }
 
       // Create Firestore user document
+      final firebaseUser = userCredential.user;
+      if (firebaseUser == null) {
+        return const Left(AuthFailure('Failed to create user'));
+      }
+
       final userModel = UserModel(
-        uid: userCredential.user!.uid,
+        uid: firebaseUser.uid,
         name: name,
         email: email,
         isEmailVerified: false,
@@ -66,17 +75,19 @@ class AuthService {
       );
 
       // Check email verification
-      if (!userCredential.user!.emailVerified) {
+      final firebaseUser = userCredential.user;
+      if (firebaseUser == null) {
+        return const Left(AuthFailure('Failed to sign in'));
+      }
+
+      if (!firebaseUser.emailVerified) {
         await _auth.signOut();
         return const Left(AuthFailure(
             'Email not verified. Please check your inbox and verify your email.'));
       }
 
       // Update isEmailVerified in Firestore
-      await _firestore
-          .collection('users')
-          .doc(userCredential.user!.uid)
-          .update({'isEmailVerified': true});
+        await _firestore.collection('users').doc(firebaseUser.uid).update({'isEmailVerified': true});
 
       return Right(userCredential);
     } on FirebaseAuthException catch (e) {
@@ -108,28 +119,26 @@ class AuthService {
 
       // Sign in to Firebase
       final userCredential = await _auth.signInWithCredential(credential);
+      final firebaseUser = userCredential.user;
+      if (firebaseUser == null) {
+        return const Left(AuthFailure('Failed to sign in with Google'));
+      }
 
       // Check if user document exists
-      final userDoc = await _firestore
-          .collection('users')
-          .doc(userCredential.user!.uid)
-          .get();
+      final userDoc = await _firestore.collection('users').doc(firebaseUser.uid).get();
 
       if (!userDoc.exists) {
         // Create new user document for first-time Google sign-in
         final userModel = UserModel(
-          uid: userCredential.user!.uid,
-          name: userCredential.user!.displayName ?? 'User',
-          email: userCredential.user!.email ?? '',
+          uid: firebaseUser.uid,
+          name: firebaseUser.displayName ?? 'User',
+          email: firebaseUser.email ?? '',
           isEmailVerified: true, // Google emails are verified
-          profileImageUrl: userCredential.user!.photoURL,
+          profileImageUrl: firebaseUser.photoURL,
           createdAt: DateTime.now(),
         );
 
-        await _firestore
-            .collection('users')
-            .doc(userCredential.user!.uid)
-            .set(userModel.toFirestore());
+        await _firestore.collection('users').doc(firebaseUser.uid).set(userModel.toFirestore());
       }
 
       return Right(userCredential);

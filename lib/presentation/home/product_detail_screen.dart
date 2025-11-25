@@ -568,6 +568,24 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           ),
           child: Row(
             children: [
+              Consumer(builder: (context, ref, _) {
+                final userId = ref.watch(currentUserIdProvider);
+                final savedAsync = userId != null ? ref.watch(savedIdsNotifierProvider(userId)) : const AsyncValue.data(<String>[]);
+                final isSaved = savedAsync.asData?.value.contains(product.id) ?? false;
+
+                return IconButton(
+                  icon: isSaved ? const Icon(Icons.bookmark) : const Icon(Icons.bookmark_border),
+                  color: isSaved ? Theme.of(context).colorScheme.primary : null,
+                  onPressed: userId == null
+                      ? () {
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please sign in to save items')));
+                        }
+                      : () async {
+                          final notifier = ref.read(savedIdsNotifierProvider(userId).notifier);
+                          await notifier.toggleSave(product.id);
+                        },
+                );
+              }),
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () {

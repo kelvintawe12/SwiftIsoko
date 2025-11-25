@@ -565,13 +565,17 @@ class _CartItemCard extends StatelessWidget {
 }
 
 
-class _ProductListTile extends StatelessWidget {
+class _ProductListTile extends ConsumerWidget {
   final ProductModel product;
 
   const _ProductListTile({required this.product});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userId = ref.watch(currentUserIdProvider);
+    final savedAsync = userId != null ? ref.watch(savedIdsNotifierProvider(userId)) : const AsyncValue.data(<String>[]);
+    final isSaved = savedAsync.asData?.value.contains(product.id) ?? false;
+
     return Card(
       child: ListTile(
         contentPadding: const EdgeInsets.all(12),
@@ -605,20 +609,37 @@ class _ProductListTile extends StatelessWidget {
         ),
         title: Text(product.name, maxLines: 1, overflow: TextOverflow.ellipsis),
         subtitle: Text('${product.currency} ${product.price.toStringAsFixed(0)}'),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-          decoration: BoxDecoration(
-            color: product.status == ProductStatus.sold ? Colors.green[50] : Colors.grey[100],
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            product.status.name.toUpperCase(),
-            style: TextStyle(
-              color: product.status == ProductStatus.sold ? Colors.green : Colors.grey[700],
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              decoration: BoxDecoration(
+                color: product.status == ProductStatus.sold ? Colors.green[50] : Colors.grey[100],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                product.status.name.toUpperCase(),
+                style: TextStyle(
+                  color: product.status == ProductStatus.sold ? Colors.green : Colors.grey[700],
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
             ),
-          ),
+            const SizedBox(width: 8),
+            IconButton(
+              icon: isSaved ? const Icon(Icons.bookmark) : const Icon(Icons.bookmark_border),
+              color: isSaved ? Theme.of(context).colorScheme.primary : null,
+              tooltip: isSaved ? 'Saved' : 'Save',
+              onPressed: userId == null
+                  ? null
+                  : () async {
+                      final notifier = ref.read(savedIdsNotifierProvider(userId).notifier);
+                      await notifier.toggleSave(product.id);
+                    },
+            ),
+          ],
         ),
         onTap: () {
           Navigator.of(context).push(MaterialPageRoute(
