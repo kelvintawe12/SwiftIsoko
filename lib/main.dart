@@ -2,28 +2,21 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'presentation/splash_page.dart';
+import 'package:swapit_marketplace/presentation/pages/splash_screen.dart';
 import 'firebase_options.dart';
 
 void main() async {
+  // makes sure Flutter's engine and widget system are fully
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase with platform-aware options.
-  if (kIsWeb) {
-    // Web requires explicit FirebaseOptions. Replace these values with the
-    // credentials from your Firebase console if they differ.
+  // Initialize Firebase for all platforms
+  try {
     await Firebase.initializeApp(
-      options: const FirebaseOptions(
-        apiKey: 'AIzaSyBrmAIfDwYSx8RerHYQHS255-9_UK8W9dY',
-        authDomain: 'swift-isoko.firebaseapp.com',
-        projectId: 'swift-isoko',
-        storageBucket: 'swift-isoko.firebasestorage.app',
-        messagingSenderId: '543028937998',
-        appId: '1:543028937998:web:469f13d3cae2ca0a3c035f',
-      ),
+      options: DefaultFirebaseOptions.currentPlatform,
     );
-  } else {
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  } catch (e) {
+    debugPrint('Firebase initialization error: $e');
+    // Continue anyway - app can work without Firebase for UI testing
   }
 
   runApp(

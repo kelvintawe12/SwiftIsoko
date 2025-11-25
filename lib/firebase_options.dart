@@ -17,10 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -66,4 +63,13 @@ class DefaultFirebaseOptions {
     iosBundleId: 'com.example.swapitMarketplace',
   );
 
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyAMyrBKPXgqBv_grl3oc0iaq67hWOHXy-Q',
+    appId: '1:543028937998:web:85ece2eabc73128a3c035f',
+    messagingSenderId: '543028937998',
+    projectId: 'swift-isoko',
+    authDomain: 'swift-isoko.firebaseapp.com',
+    storageBucket: 'swift-isoko.firebasestorage.app',
+    measurementId: 'G-MEASUREMENT_ID',
+  );
 }
