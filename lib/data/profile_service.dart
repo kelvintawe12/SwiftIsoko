@@ -1,36 +1,39 @@
-import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
 
+/// Minimal ProfileService stub used by profile pages.
+/// Stores values in-memory. Replace with Firestore-backed service as needed.
 class ProfileService {
-  static const _kName = 'profile_name_v1';
-  static const _kLocation = 'profile_location_v1';
-  static const _kAvatar = 'profile_avatar_v1';
-  static const _kBio = 'profile_bio_v1';
+  static ProfileService? _instance;
 
-  final SharedPreferences _prefs;
-  ProfileService._(this._prefs);
+  String name = 'Alex Davis';
+  String location = 'Kigali, Rwanda';
+  String? avatarPath;
+  String bio = '';
+
+  ProfileService._();
 
   static Future<ProfileService> getInstance() async {
-    final prefs = await SharedPreferences.getInstance();
-    return ProfileService._(prefs);
+    _instance ??= ProfileService._();
+    return _instance!;
   }
 
-  String get name => _prefs.getString(_kName) ?? 'Alex Davis';
-  String get location => _prefs.getString(_kLocation) ?? 'Kigali, Rwanda';
-  String? get avatarPath => _prefs.getString(_kAvatar);
-  String get bio => _prefs.getString(_kBio) ?? '';
+  // Example setters
+  Future<void> updateName(String newName) async {
+    name = newName;
+  }
 
-  Future<void> save(String name, String location, String? avatarPath, String? bio) async {
-    await _prefs.setString(_kName, name);
-    await _prefs.setString(_kLocation, location);
-    if (avatarPath == null) {
-      await _prefs.remove(_kAvatar);
-    } else {
-      await _prefs.setString(_kAvatar, avatarPath);
-    }
-    if (bio == null) {
-      await _prefs.remove(_kBio);
-    } else {
-      await _prefs.setString(_kBio, bio);
-    }
+  Future<void> updateAvatarPath(String path) async {
+    avatarPath = path;
+  }
+
+  Future<void> updateBio(String newBio) async {
+    bio = newBio;
+  }
+  
+  Future<void> save(String newName, String newLocation, String? newAvatarPath, String? newBio) async {
+    name = newName;
+    location = newLocation;
+    avatarPath = newAvatarPath;
+    bio = newBio ?? '';
   }
 }

@@ -8,8 +8,6 @@
 	<string>Swapit Marketplace</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
-	<!-- Copied from GoogleService-info.plist key CLIENT_ID-->
-	<string>543028937998-6l9cdavmposcis9ohc4nu1pbfoe32guj.apps.googleusercontent.com</string>
 	<!-- Google Sign-In section -->
 	<key>CFBundleURLTypes</key>
 	<array>

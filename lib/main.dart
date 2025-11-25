@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'presentation/widgets/auth_wrapper.dart';
@@ -19,25 +20,41 @@ void main() async {
     // Continue anyway - app can work without Firebase for UI testing
   }
 
-  runApp(const SwapItApp());
+  runApp(
+    const ProviderScope(
+      child: SwiftIsokoApp(),
+    ),
+  );
 }
 
-class SwapItApp extends StatelessWidget {
-  const SwapItApp({super.key});
+class SwiftIsokoApp extends ConsumerWidget {
+  const SwiftIsokoApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-      title: 'SwapIt',
-      debugShowCheckedModeBanner: false,
+      title: 'SwiftIsoko',
       theme: ThemeData(
-        primaryColor: AppColors.primary,
-        scaffoldBackgroundColor: AppColors.background,
-        textTheme: GoogleFonts.poppinsTextTheme(),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.light,
+        ),
+        useMaterial3: true,
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
+          centerTitle: true,
           elevation: 0,
-          iconTheme: IconThemeData(color: AppColors.textDark),
+        ),
+        cardTheme: CardThemeData(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          filled: true,
         ),
       ),
       home: const AuthWrapper(),

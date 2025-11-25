@@ -1,42 +1,33 @@
-import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
 
-/// Simple persistent likes service using SharedPreferences.
+/// Minimal in-memory LikesService stub used by demo pages and widgets.
+/// Replace with a persistent implementation if needed.
 class LikesService {
-  static const _kKey = 'liked_items_v1';
   static LikesService? _instance;
-  final SharedPreferences _prefs;
+  final Set<String> _liked = <String>{};
 
-  LikesService._(this._prefs);
+  LikesService._();
 
   static Future<LikesService> getInstance() async {
-    if (_instance != null) return _instance!;
-    final prefs = await SharedPreferences.getInstance();
-    _instance = LikesService._(prefs);
+    _instance ??= LikesService._();
     return _instance!;
   }
 
-  /// Returns the set of liked ids (as a Set of strings).
-  Set<String> getLikedSet() {
-    final list = _prefs.getStringList(_kKey) ?? <String>[];
-    return list.toSet();
-  }
-
+  /// Returns whether the id is liked.
   Future<bool> isLiked(String id) async {
-    final set = getLikedSet();
-    return set.contains(id);
+    return _liked.contains(id);
   }
 
+  /// Toggle liked state; returns new state.
   Future<bool> toggleLiked(String id) async {
-    final set = getLikedSet();
-    final added = set.add(id);
-    if (!added) set.remove(id);
-    await _prefs.setStringList(_kKey, set.toList());
-    return set.contains(id);
+    if (_liked.contains(id)) {
+      _liked.remove(id);
+      return false;
+    }
+    _liked.add(id);
+    return true;
   }
 
-  Future<void> setLiked(String id, bool liked) async {
-    final set = getLikedSet();
-    if (liked) set.add(id); else set.remove(id);
-    await _prefs.setStringList(_kKey, set.toList());
-  }
+  /// Synchronous snapshot of liked ids.
+  Set<String> getLikedSet() => Set<String>.from(_liked);
 }
