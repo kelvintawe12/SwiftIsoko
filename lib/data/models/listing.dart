@@ -1,4 +1,4 @@
-import 'product.dart';
+// import 'product.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 
@@ -31,7 +31,8 @@ class Listing {
   }
 
   /// Convert back to Product if available
-  ProductModel? toProduct() => null; // Placeholder, as product is no longer stored directly
+  ProductModel? toProduct() =>
+      null; // Placeholder, as product is no longer stored directly
 
   @override
   bool operator ==(Object other) {

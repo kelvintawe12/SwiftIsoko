@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../data/models/product.dart';
 import '../../data/providers/providers.dart';
 import '../../data/utils/validators.dart';
 import 'main_screen.dart';
+import 'add_product_screen.dart';
+import 'product_detail_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -209,8 +212,10 @@ class HomeScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Add product feature coming soon!')),
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const AddProductScreen(),
+            ),
           );
         },
         icon: const Icon(Icons.add),
@@ -282,7 +287,7 @@ class _CategoryCard extends StatelessWidget {
 }
 
 class _ProductCard extends ConsumerWidget {
-  final dynamic product;
+  final ProductModel product;
 
   const _ProductCard({required this.product});
 
@@ -292,8 +297,10 @@ class _ProductCard extends ConsumerWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('View ${product.name}')),
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => ProductDetailScreen(product: product),
+            ),
           );
         },
         child: Column(
