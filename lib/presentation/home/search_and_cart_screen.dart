@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../data/providers/providers.dart';
 import '../../data/models/cart_item.dart';
 import '../../data/models/product.dart';
+import 'product_detail_screen.dart';
 import '../../data/utils/validators.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
@@ -17,11 +18,29 @@ class SearchScreen extends ConsumerStatefulWidget {
 
 class _SearchScreenState extends ConsumerState<SearchScreen> {
   final _searchController = TextEditingController();
+  Future<List<ProductModel>>? _searchFuture;
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _runSearch() {
+    final query = _searchController.text.trim();
+    if (query.isEmpty) {
+      setState(() {
+        _searchFuture = null;
+      });
+      return;
+    }
+
+    final productService = ref.read(productServiceProvider);
+    setState(() {
+      _searchFuture = productService
+          .searchProducts(query: query, limit: 50)
+          .then((either) => either.fold((_) => <ProductModel>[], (list) => list));
+    });
   }
 
   @override
@@ -36,51 +55,83 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             padding: const EdgeInsets.all(16),
             child: TextField(
               controller: _searchController,
+              textInputAction: TextInputAction.search,
               decoration: InputDecoration(
                 hintText: 'Search for products...',
                 prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_searchController.text.isNotEmpty)
+                      IconButton(
                         icon: const Icon(Icons.clear),
                         onPressed: () {
                           _searchController.clear();
-                          setState(() {});
+                          setState(() {
+                            _searchFuture = null;
+                          });
                         },
-                      )
-                    : null,
+                      ),
+                    IconButton(
+                      icon: const Icon(Icons.arrow_forward),
+                      onPressed: () => _runSearch(),
+                    ),
+                  ],
+                ),
               ),
-              onChanged: (value) {
-                setState(() {});
-              },
+              onSubmitted: (_) => _runSearch(),
             ),
           ),
+
+          // Results area
           Expanded(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.search,
-                    size: 80,
-                    color: Colors.grey[400],
+            child: _searchController.text.isEmpty && _searchFuture == null
+                ? Consumer(builder: (context, ref, _) {
+                    // show active products stream when no query
+                    final productsAsync = ref.watch(productsStreamProvider);
+                    return productsAsync.when(
+                      data: (products) {
+                        if (products.isEmpty) {
+                          return const Center(child: Text('No products available'));
+                        }
+                        return ListView.separated(
+                          padding: const EdgeInsets.all(12),
+                          itemCount: products.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 8),
+                          itemBuilder: (context, index) {
+                            final p = products[index];
+                            return _ProductListTile(product: p);
+                          },
+                        );
+                      },
+                      loading: () => const Center(child: CircularProgressIndicator()),
+                      error: (e, s) => Center(child: Text('Error loading products: $e')),
+                    );
+                  })
+                : FutureBuilder<List<ProductModel>>(
+                    future: _searchFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (snapshot.hasError) {
+                        return Center(child: Text('Search error: ${snapshot.error}'));
+                      }
+                      final results = snapshot.data ?? [];
+                      if (results.isEmpty) {
+                        return const Center(child: Text('No results found'));
+                      }
+                      return ListView.separated(
+                        padding: const EdgeInsets.all(12),
+                        itemCount: results.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 8),
+                        itemBuilder: (context, index) {
+                          final p = results[index];
+                          return _ProductListTile(product: p);
+                        },
+                      );
+                    },
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Search for products',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: Colors.grey[600],
-                        ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Start typing to find products',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[500],
-                        ),
-                  ),
-                ],
-              ),
-            ),
           ),
         ],
       ),
@@ -508,6 +559,72 @@ class _CartItemCard extends StatelessWidget {
           onPressed: onRemove,
           tooltip: 'Remove from cart',
         ),
+      ),
+    );
+  }
+}
+
+
+class _ProductListTile extends StatelessWidget {
+  final ProductModel product;
+
+  const _ProductListTile({required this.product});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(
+        contentPadding: const EdgeInsets.all(12),
+        leading: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: product.imageUrls.isNotEmpty
+              ? CachedNetworkImage(
+                  imageUrl: product.imageUrls.first,
+                  width: 64,
+                  height: 64,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    width: 64,
+                    height: 64,
+                    color: Colors.grey[300],
+                    child: const Center(child: CircularProgressIndicator()),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    width: 64,
+                    height: 64,
+                    color: Colors.grey[300],
+                    child: const Icon(Icons.broken_image),
+                  ),
+                )
+              : Container(
+                  width: 64,
+                  height: 64,
+                  color: Colors.grey[300],
+                  child: const Icon(Icons.image),
+                ),
+        ),
+        title: Text(product.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+        subtitle: Text('${product.currency} ${product.price.toStringAsFixed(0)}'),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          decoration: BoxDecoration(
+            color: product.status == ProductStatus.sold ? Colors.green[50] : Colors.grey[100],
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            product.status.name.toUpperCase(),
+            style: TextStyle(
+              color: product.status == ProductStatus.sold ? Colors.green : Colors.grey[700],
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
+          ),
+        ),
+        onTap: () {
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (_) => ProductDetailScreen(product: product),
+          ));
+        },
       ),
     );
   }
