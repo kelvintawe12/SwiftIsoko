@@ -39,6 +39,22 @@ class _LoginPageState extends State<LoginPage> {
 
       if (!mounted) return;
 
+      // Check if email is verified
+      if (_authService.currentUser?.emailVerified == false) {
+        await _authService.signOut();
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please verify your email before signing in'),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 4),
+          ),
+        );
+        setState(() => _isLoading = false);
+        return;
+      }
+
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (context) => const MainScreen(),
