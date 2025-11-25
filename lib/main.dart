@@ -1,13 +1,30 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'presentation/splash_page.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
-  await Firebase.initializeApp();
+  // Initialize Firebase with platform-aware options.
+  if (kIsWeb) {
+    // Web requires explicit FirebaseOptions. Replace these values with the
+    // credentials from your Firebase console if they differ.
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: 'AIzaSyBrmAIfDwYSx8RerHYQHS255-9_UK8W9dY',
+        authDomain: 'swift-isoko.firebaseapp.com',
+        projectId: 'swift-isoko',
+        storageBucket: 'swift-isoko.firebasestorage.app',
+        messagingSenderId: '543028937998',
+        appId: '1:543028937998:web:469f13d3cae2ca0a3c035f',
+      ),
+    );
+  } else {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  }
 
   runApp(
     const ProviderScope(
