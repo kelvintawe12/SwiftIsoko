@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'login_page.dart';
+import 'email_verification_page.dart';
+import '../../data/auth_service.dart';
+import '../../core/utils/validators.dart';
+import '../app.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -10,18 +14,97 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  late final _authService = AuthService();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _isLoading = false;
+  int _passwordStrength = 0;
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _register() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      await _authService.signUpWithEmail(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        name: _nameController.text.trim(),
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Account created! Please verify your email.'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const EmailVerificationPage(),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    setState(() => _isLoading = true);
+
+    try {
+      await _authService.signInWithGoogle();
+
+      if (!mounted) return;
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const MainScreen(),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -68,7 +151,39 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
                 const SizedBox(height: 48),
 
-                // Email or Phone Field
+                // Name Field
+                Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5F6FA),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: TextFormField(
+                    controller: _nameController,
+                    keyboardType: TextInputType.name,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: const InputDecoration(
+                      hintText: 'Full Name',
+                      hintStyle: TextStyle(
+                        color: Color(0xFFB0B0B0),
+                        fontSize: 14,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.person_outline,
+                        color: Color(0xFFB0B0B0),
+                        size: 20,
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
+                    ),
+                    validator: Validators.validateName,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Email Field
                 Container(
                   decoration: BoxDecoration(
                     color: const Color(0xFFF5F6FA),
@@ -77,8 +192,9 @@ class _RegisterPageState extends State<RegisterPage> {
                   child: TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
+                    autocorrect: false,
                     decoration: InputDecoration(
-                      hintText: 'Email or Phone',
+                      hintText: 'Email',
                       hintStyle: const TextStyle(
                         color: Color(0xFFB0B0B0),
                         fontSize: 14,
@@ -94,12 +210,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         vertical: 16,
                       ),
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your email or phone';
-                      }
-                      return null;
-                    },
+                    validator: Validators.validateEmail,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -113,6 +224,12 @@ class _RegisterPageState extends State<RegisterPage> {
                   child: TextFormField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
+                    onChanged: (value) {
+                      setState(() {
+                        _passwordStrength =
+                            Validators.calculatePasswordStrength(value);
+                      });
+                    },
                     decoration: InputDecoration(
                       hintText: 'Password',
                       hintStyle: const TextStyle(
@@ -144,17 +261,42 @@ class _RegisterPageState extends State<RegisterPage> {
                         vertical: 16,
                       ),
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a password';
-                      }
-                      if (value.length < 6) {
-                        return 'Password must be at least 6 characters';
-                      }
-                      return null;
-                    },
+                    validator: (value) => Validators.validatePassword(value,
+                        isRegistration: true),
                   ),
                 ),
+                // Password strength indicator
+                if (_passwordController.text.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(2),
+                          child: LinearProgressIndicator(
+                            value: _passwordStrength / 100,
+                            backgroundColor: const Color(0xFFE0E0E0),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Validators.getPasswordStrengthColor(
+                                  _passwordStrength),
+                            ),
+                            minHeight: 4,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        Validators.getPasswordStrengthText(_passwordStrength),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Validators.getPasswordStrengthColor(
+                              _passwordStrength),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 16),
 
                 // Confirm Password Field
@@ -197,31 +339,17 @@ class _RegisterPageState extends State<RegisterPage> {
                         vertical: 16,
                       ),
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please confirm your password';
-                      }
-                      if (value != _passwordController.text) {
-                        return 'Passwords do not match';
-                      }
-                      return null;
-                    },
+                    validator: (value) => Validators.validateConfirmPassword(
+                      value,
+                      _passwordController.text,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 32),
 
                 // Create Account Button
                 ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      // TODO: Implement registration logic
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Creating account...'),
-                        ),
-                      );
-                    }
-                  },
+                  onPressed: _isLoading ? null : _register,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF6C63E8),
                     foregroundColor: Colors.white,
@@ -231,13 +359,23 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     elevation: 0,
                   ),
-                  child: const Text(
-                    'Create Account',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Text(
+                          'Create Account',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                 ),
                 const SizedBox(height: 24),
 
@@ -305,14 +443,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                 // Google Sign In Button
                 OutlinedButton.icon(
-                  onPressed: () {
-                    // TODO: Implement Google Sign In
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Google Sign In coming soon...'),
-                      ),
-                    );
-                  },
+                  onPressed: _isLoading ? null : _signInWithGoogle,
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     side: const BorderSide(
@@ -323,20 +454,20 @@ class _RegisterPageState extends State<RegisterPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  icon: Image.network(
-                    'https://www.google.com/favicon.ico',
+                  icon: Image.asset(
+                    'assets/images/google_logo.png',
                     width: 20,
                     height: 20,
                     errorBuilder: (context, error, stackTrace) {
                       return const Icon(
-                        Icons.g_mobiledata,
+                        Icons.login,
                         color: Color(0xFF4285F4),
-                        size: 24,
+                        size: 20,
                       );
                     },
                   ),
                   label: const Text(
-                    'Google',
+                    'Sign up with Google',
                     style: TextStyle(
                       color: Color(0xFF2D3436),
                       fontSize: 14,

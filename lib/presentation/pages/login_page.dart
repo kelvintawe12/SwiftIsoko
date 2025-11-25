@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'register_page.dart';
+import '../../data/auth_service.dart';
+import '../../core/utils/validators.dart';
+import '../app.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -12,13 +15,114 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  late final _authService = AuthService();
   bool _obscurePassword = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _login() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      await _authService.signInWithEmail(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      if (!mounted) return;
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const MainScreen(),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    setState(() => _isLoading = true);
+
+    try {
+      await _authService.signInWithGoogle();
+
+      if (!mounted) return;
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const MainScreen(),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _forgotPassword() async {
+    if (_emailController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter your email address first'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    try {
+      await _authService.resetPassword(_emailController.text.trim());
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password reset email sent!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -74,6 +178,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
+                    autocorrect: false,
                     decoration: const InputDecoration(
                       hintText: 'Email or Phone',
                       hintStyle: TextStyle(
@@ -91,12 +196,7 @@ class _LoginPageState extends State<LoginPage> {
                         vertical: 16,
                       ),
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your email or phone';
-                      }
-                      return null;
-                    },
+                    validator: Validators.validateEmail,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -141,12 +241,7 @@ class _LoginPageState extends State<LoginPage> {
                         vertical: 16,
                       ),
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
-                      }
-                      return null;
-                    },
+                    validator: Validators.validatePassword,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -155,14 +250,7 @@ class _LoginPageState extends State<LoginPage> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () {
-                      // TODO: Implement forgot password
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Forgot password coming soon...'),
-                        ),
-                      );
-                    },
+                    onPressed: _forgotPassword,
                     child: const Text(
                       'Forgot Password?',
                       style: TextStyle(
@@ -176,16 +264,7 @@ class _LoginPageState extends State<LoginPage> {
 
                 // Sign In Button
                 ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      // TODO: Implement login logic
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Signing in...'),
-                        ),
-                      );
-                    }
-                  },
+                  onPressed: _isLoading ? null : _login,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF6C63E8),
                     foregroundColor: Colors.white,
@@ -195,13 +274,23 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     elevation: 0,
                   ),
-                  child: const Text(
-                    'Sign In',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Text(
+                          'Sign In',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                 ),
                 const SizedBox(height: 24),
 
@@ -269,14 +358,7 @@ class _LoginPageState extends State<LoginPage> {
 
                 // Google Sign In Button
                 OutlinedButton.icon(
-                  onPressed: () {
-                    // TODO: Implement Google Sign In
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Google Sign In coming soon...'),
-                      ),
-                    );
-                  },
+                  onPressed: _isLoading ? null : _signInWithGoogle,
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     side: const BorderSide(
@@ -287,20 +369,20 @@ class _LoginPageState extends State<LoginPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  icon: Image.network(
-                    'https://www.google.com/favicon.ico',
+                  icon: Image.asset(
+                    'assets/images/google_logo.png',
                     width: 20,
                     height: 20,
                     errorBuilder: (context, error, stackTrace) {
                       return const Icon(
-                        Icons.g_mobiledata,
+                        Icons.login,
                         color: Color(0xFF4285F4),
-                        size: 24,
+                        size: 20,
                       );
                     },
                   ),
                   label: const Text(
-                    'Google',
+                    'Sign in with Google',
                     style: TextStyle(
                       color: Color(0xFF2D3436),
                       fontSize: 14,
