@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/providers/providers.dart';
 import '../../data/providers/state_notifiers.dart';
 import '../../data/utils/validators.dart';
+import '../../data/models/product.dart';
 import '../auth/login_page.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -34,15 +35,22 @@ class ProfileScreen extends ConsumerWidget {
             );
           }
 
-          return SingleChildScrollView(
+          // Preload user-related streams
+          final userProductsAsync = ref.watch(userProductsProvider(user.uid));
+          final userOrdersAsync = ref.watch(userOrdersProvider);
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 24),
-                // Profile Picture
-                Stack(
+
+                // Header: Avatar, name, email, rating
+                Row(
                   children: [
                     CircleAvatar(
-                      radius: 60,
+                      radius: 44,
                       backgroundColor: Theme.of(context).colorScheme.primary,
                       backgroundImage: user.profileImageUrl != null
                           ? NetworkImage(user.profileImageUrl!)
@@ -51,176 +59,412 @@ class ProfileScreen extends ConsumerWidget {
                           ? Text(
                               Formatters.getInitials(user.name),
                               style: const TextStyle(
-                                fontSize: 32,
+                                fontSize: 24,
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
                               ),
                             )
                           : null,
                     ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: CircleAvatar(
-                        radius: 18,
-                        backgroundColor:
-                            Theme.of(context).colorScheme.secondary,
-                        child: IconButton(
-                          icon: const Icon(Icons.camera_alt, size: 18),
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content:
-                                    Text('Change photo feature coming soon'),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            user.name,
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineSmall
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            user.email,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(color: Colors.grey[600]),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              const Icon(Icons.star,
+                                  color: Colors.amber, size: 18),
+                              const SizedBox(width: 6),
+                              Text(
+                                user.ratingAverage.toStringAsFixed(1),
+                                style:
+                                    const TextStyle(fontWeight: FontWeight.bold),
                               ),
-                            );
-                          },
-                          padding: EdgeInsets.zero,
-                          color: Colors.white,
+                              const SizedBox(width: 6),
+                              Text('(${user.numRatings} reviews)',
+                                  style:
+                                      TextStyle(color: Colors.grey[600])),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (user.isEmailVerified)
+                      Container(
+                        margin: const EdgeInsets.only(left: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.green[50],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.green),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.verified, size: 14, color: Colors.green),
+                            SizedBox(width: 6),
+                            Text('Verified',
+                                style: TextStyle(
+                                    color: Colors.green,
+                                    fontWeight: FontWeight.bold)),
+                          ],
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-
-                // Name
-                Text(
-                  user.name,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const SizedBox(height: 4),
-
-                // Email
-                Text(
-                  user.email,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[600],
-                      ),
-                ),
-                const SizedBox(height: 8),
-
-                // Rating
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.star, color: Colors.amber, size: 20),
-                    const SizedBox(width: 4),
-                    Text(
-                      user.ratingAverage.toStringAsFixed(1),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      ' (${user.numRatings} reviews)',
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
                   ],
                 ),
 
-                // Verification Badge
-                if (user.isEmailVerified)
-                  Container(
-                    margin: const EdgeInsets.only(top: 8),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.green[50],
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.green),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
+                const SizedBox(height: 18),
+
+                // Tabs
+                Expanded(
+                  child: DefaultTabController(
+                    length: 5,
+                    child: Column(
                       children: [
-                        Icon(Icons.verified, size: 16, color: Colors.green),
-                        SizedBox(width: 4),
-                        Text(
-                          'Verified',
-                          style: TextStyle(
-                            color: Colors.green,
-                            fontWeight: FontWeight.bold,
+                        TabBar(
+                          isScrollable: true,
+                          labelColor: Theme.of(context).colorScheme.primary,
+                          unselectedLabelColor: Colors.grey[600],
+                          tabs: const [
+                            Tab(text: 'My Listings'),
+                            Tab(text: 'Purchases'),
+                            Tab(text: 'Made'),
+                            Tab(text: 'Saved'),
+                            Tab(text: 'More'),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Expanded(
+                          child: TabBarView(
+                            children: [
+                              // My Listings
+                              userProductsAsync.when(
+                                data: (products) {
+                                  if (products.isEmpty) {
+                                    return const Center(
+                                        child: Text('No listings yet'));
+                                  }
+
+                                  return ListView.separated(
+                                    itemCount: products.length,
+                                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    itemBuilder: (context, index) {
+                                      final p = products[index];
+                                      return ListTile(
+                                        leading: p.imageUrls.isNotEmpty
+                                            ? ClipRRect(
+                                                borderRadius: BorderRadius.circular(8),
+                                                child: Image.network(
+                                                  p.imageUrls.first,
+                                                  width: 60,
+                                                  height: 60,
+                                                  fit: BoxFit.cover,
+                                                ),
+                                              )
+                                            : Container(
+                                                width: 60,
+                                                height: 60,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.grey[100],
+                                                  borderRadius: BorderRadius.circular(8),
+                                                ),
+                                                child: const Icon(Icons.image_outlined),
+                                              ),
+                                        title: Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+                                        subtitle: Text('${p.currency} ${p.price.toStringAsFixed(0)}'),
+                                        trailing: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                          decoration: BoxDecoration(
+                                            color: p.status == ProductStatus.sold ? Colors.green[50] : Colors.grey[100],
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: Text(
+                                            p.status.name.toUpperCase(),
+                                            style: TextStyle(
+                                              color: p.status == ProductStatus.sold ? Colors.green : Colors.grey[700],
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ),
+                                        onTap: () {
+                                          // Open product details (not implemented)
+                                        },
+                                      );
+                                    },
+                                  );
+                                },
+                                loading: () => const Center(child: CircularProgressIndicator()),
+                                error: (e, s) => Center(child: Text('Error: $e')),
+                              ),
+
+                              // Purchases (orders)
+                              userOrdersAsync.when(
+                                data: (orders) {
+                                  if (orders.isEmpty) {
+                                    return const Center(child: Text('No purchases yet'));
+                                  }
+
+                                  return ListView.separated(
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    itemCount: orders.length,
+                                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                                    itemBuilder: (context, index) {
+                                      final o = orders[index];
+                                      return ListTile(
+                                        leading: const Icon(Icons.shopping_bag_outlined),
+                                        title: Text('Order • ${o.totalAmount.toStringAsFixed(0)} ${o.paymentMethod ?? ''}'),
+                                        subtitle: Text('${o.status.name} • ${o.createdAt.toLocal().toString().split(' ').first}'),
+                                        onTap: () {},
+                                      );
+                                    },
+                                  );
+                                },
+                                loading: () => const Center(child: CircularProgressIndicator()),
+                                error: (e, s) => Center(child: Text('Error: $e')),
+                              ),
+
+                              // Made (sold items)
+                              userProductsAsync.when(
+                                data: (products) {
+                                  final sold = products.where((p) => p.status == ProductStatus.sold).toList();
+                                  if (sold.isEmpty) {
+                                    return const Center(child: Text('No sold items yet'));
+                                  }
+
+                                  return ListView.separated(
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    itemCount: sold.length,
+                                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                                    itemBuilder: (context, index) {
+                                      final p = sold[index];
+                                      return ListTile(
+                                        leading: p.imageUrls.isNotEmpty
+                                            ? Image.network(p.imageUrls.first, width: 60, height: 60, fit: BoxFit.cover)
+                                            : const Icon(Icons.image_outlined),
+                                        title: Text(p.name),
+                                        subtitle: Text('${p.currency} ${p.price.toStringAsFixed(0)}'),
+                                      );
+                                    },
+                                  );
+                                },
+                                loading: () => const Center(child: CircularProgressIndicator()),
+                                error: (e, s) => Center(child: Text('Error: $e')),
+                              ),
+
+                              // Saved: show both user-doc savedProductIds and favorites subcollection
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                child: Column(
+                                  children: [
+                                    // Saved (user doc)
+                                    Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                                        child: Text('Saved', style: Theme.of(context).textTheme.titleMedium),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: 160,
+                                      child: Consumer(builder: (context, innerRef, _) {
+                                        final savedAsync = innerRef.watch(savedProductsProvider(user.uid));
+                                        return savedAsync.when(
+                                          data: (products) {
+                                            if (products.isEmpty) {
+                                              return const Center(child: Text('No saved items (user document).'));
+                                            }
+                                            return ListView.separated(
+                                              scrollDirection: Axis.horizontal,
+                                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                                              itemCount: products.length,
+                                              separatorBuilder: (_, __) => const SizedBox(width: 8),
+                                              itemBuilder: (context, i) {
+                                                final p = products[i];
+                                                return SizedBox(
+                                                  width: 260,
+                                                  child: Card(
+                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                                    child: Row(
+                                                      children: [
+                                                        if (p.imageUrls.isNotEmpty)
+                                                          ClipRRect(
+                                                            borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), bottomLeft: Radius.circular(12)),
+                                                            child: Image.network(p.imageUrls.first, width: 90, height: 90, fit: BoxFit.cover),
+                                                          )
+                                                        else
+                                                          Container(width: 90, height: 90, color: Colors.grey[100], child: const Icon(Icons.image_outlined)),
+                                                        const SizedBox(width: 8),
+                                                        Expanded(
+                                                          child: Padding(
+                                                            padding: const EdgeInsets.all(8.0),
+                                                            child: Column(
+                                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                                              mainAxisAlignment: MainAxisAlignment.center,
+                                                              children: [
+                                                                Text(p.name, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                                                const SizedBox(height: 6),
+                                                                Row(
+                                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                  children: [
+                                                                    Text('${p.currency} ${p.price.toStringAsFixed(0)}'),
+                                                                    IconButton(
+                                                                      icon: const Icon(Icons.bookmark_remove_outlined, color: Colors.red),
+                                                                      onPressed: () async {
+                                                                        final userService = innerRef.read(userServiceProvider);
+                                                                        final favService = innerRef.read(favoriteServiceProvider);
+                                                                        // remove from both sources
+                                                                        final res1 = await userService.removeSavedProductId(user.uid, p.id);
+                                                                        final res2 = await favService.removeFavorite(user.uid, p.id);
+                                                                        res1.fold((f) {
+                                                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: ${f.message}'), backgroundColor: Colors.red));
+                                                                        }, (_) {});
+                                                                        res2.fold((f) {
+                                                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: ${f.message}'), backgroundColor: Colors.red));
+                                                                        }, (_) {});
+                                                                        // refresh providers
+                                                                        innerRef.invalidate(savedProductsProvider(user.uid));
+                                                                        innerRef.invalidate(favoritesSubcollectionProductsProvider(user.uid));
+                                                                      },
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            );
+                                          },
+                                          loading: () => const Center(child: CircularProgressIndicator()),
+                                          error: (e, s) => Center(child: Text('Error: $e')),
+                                        );
+                                      }),
+                                    ),
+
+                                    const SizedBox(height: 12),
+
+                                    // Favorites (subcollection)
+                                    Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                                        child: Text('Favorites', style: Theme.of(context).textTheme.titleMedium),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Consumer(builder: (context, innerRef, _) {
+                                        final favsAsync = innerRef.watch(favoritesSubcollectionProductsProvider(user.uid));
+                                        return favsAsync.when(
+                                          data: (products) {
+                                            if (products.isEmpty) return const Center(child: Text('No favorites yet.'));
+                                            return ListView.separated(
+                                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                                              itemCount: products.length,
+                                              separatorBuilder: (_, __) => const SizedBox(height: 8),
+                                              itemBuilder: (context, index) {
+                                                final p = products[index];
+                                                return ListTile(
+                                                  leading: p.imageUrls.isNotEmpty ? Image.network(p.imageUrls.first, width: 60, height: 60, fit: BoxFit.cover) : const Icon(Icons.image_outlined),
+                                                  title: Text(p.name),
+                                                  subtitle: Text('${p.currency} ${p.price.toStringAsFixed(0)}'),
+                                                  trailing: IconButton(
+                                                    icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                                    onPressed: () async {
+                                                      final userService = innerRef.read(userServiceProvider);
+                                                      final favService = innerRef.read(favoriteServiceProvider);
+                                                      final res1 = await userService.removeSavedProductId(user.uid, p.id);
+                                                      final res2 = await favService.removeFavorite(user.uid, p.id);
+                                                      res1.fold((f) {
+                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: ${f.message}'), backgroundColor: Colors.red));
+                                                      }, (_) {
+                                                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Removed from saved (user doc)')));
+                                                      });
+                                                      res2.fold((f) {
+                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: ${f.message}'), backgroundColor: Colors.red));
+                                                      }, (_) {
+                                                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Removed from favorites (subcollection)')));
+                                                      });
+                                                      innerRef.invalidate(savedProductsProvider(user.uid));
+                                                      innerRef.invalidate(favoritesSubcollectionProductsProvider(user.uid));
+                                                    },
+                                                  ),
+                                                  onTap: () {},
+                                                );
+                                              },
+                                            );
+                                          },
+                                          loading: () => const Center(child: CircularProgressIndicator()),
+                                          error: (e, s) => Center(child: Text('Error: $e')),
+                                        );
+                                      }),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // More (other menu items)
+                              ListView(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                children: [
+                                  _MenuItem(
+                                    icon: Icons.chat_outlined,
+                                    title: 'Messages',
+                                    subtitle: 'Chat with buyers and sellers',
+                                    onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Messages coming soon'))),
+                                  ),
+                                  _MenuItem(
+                                    icon: Icons.location_on_outlined,
+                                    title: 'Addresses',
+                                    subtitle: 'Manage shipping addresses',
+                                    onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Addresses coming soon'))),
+                                  ),
+                                  _MenuItem(
+                                    icon: Icons.help_outline,
+                                    title: 'Help & Support',
+                                    subtitle: 'Get help with your account',
+                                    onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Support coming soon'))),
+                                  ),
+                                  const Divider(height: 32),
+                                  _MenuItem(
+                                    icon: Icons.logout,
+                                    title: 'Sign Out',
+                                    subtitle: 'Sign out of your account',
+                                    textColor: Colors.red,
+                                    onTap: () => _showSignOutDialog(context, ref),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
-                const SizedBox(height: 32),
-
-                // Menu Items
-                _MenuItem(
-                  icon: Icons.inventory_2_outlined,
-                  title: 'My Products',
-                  subtitle: 'View and manage your listings',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('My Products coming soon')),
-                    );
-                  },
                 ),
-                _MenuItem(
-                  icon: Icons.shopping_bag_outlined,
-                  title: 'My Orders',
-                  subtitle: 'Track your purchases',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('My Orders coming soon')),
-                    );
-                  },
-                ),
-                _MenuItem(
-                  icon: Icons.favorite_outline,
-                  title: 'Favorites',
-                  subtitle: 'Your saved items',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Favorites coming soon')),
-                    );
-                  },
-                ),
-                _MenuItem(
-                  icon: Icons.chat_outlined,
-                  title: 'Messages',
-                  subtitle: 'Chat with buyers and sellers',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Messages coming soon')),
-                    );
-                  },
-                ),
-                _MenuItem(
-                  icon: Icons.location_on_outlined,
-                  title: 'Addresses',
-                  subtitle: 'Manage shipping addresses',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Addresses coming soon')),
-                    );
-                  },
-                ),
-                _MenuItem(
-                  icon: Icons.help_outline,
-                  title: 'Help & Support',
-                  subtitle: 'Get help with your account',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Support coming soon')),
-                    );
-                  },
-                ),
-                const Divider(height: 32),
-                _MenuItem(
-                  icon: Icons.logout,
-                  title: 'Sign Out',
-                  subtitle: 'Sign out of your account',
-                  textColor: Colors.red,
-                  onTap: () {
-                    _showSignOutDialog(context, ref);
-                  },
-                ),
-                const SizedBox(height: 24),
               ],
             ),
           );

@@ -122,4 +122,43 @@ class UserService {
       return Left(ServerFailure('Failed to delete account: ${e.toString()}'));
     }
   }
+
+  // Get saved product ids from user document
+  Future<Either<Failure, List<String>>> getSavedProductIds(String uid) async {
+    try {
+      final doc = await _firestore.collection('users').doc(uid).get();
+
+      if (!doc.exists) return const Right([]);
+
+      final data = doc.data() as Map<String, dynamic>;
+      final ids = List<String>.from(data['savedProductIds'] ?? []);
+      return Right(ids);
+    } catch (e) {
+      return Left(ServerFailure('Failed to fetch saved ids: ${e.toString()}'));
+    }
+  }
+
+  // Add a product id to the user's savedProductIds array
+  Future<Either<Failure, void>> addSavedProductId(String uid, String productId) async {
+    try {
+      await _firestore.collection('users').doc(uid).update({
+        'savedProductIds': FieldValue.arrayUnion([productId])
+      });
+      return const Right(null);
+    } catch (e) {
+      return Left(ServerFailure('Failed to add saved id: ${e.toString()}'));
+    }
+  }
+
+  // Remove a product id from the user's savedProductIds array
+  Future<Either<Failure, void>> removeSavedProductId(String uid, String productId) async {
+    try {
+      await _firestore.collection('users').doc(uid).update({
+        'savedProductIds': FieldValue.arrayRemove([productId])
+      });
+      return const Right(null);
+    } catch (e) {
+      return Left(ServerFailure('Failed to remove saved id: ${e.toString()}'));
+    }
+  }
 }

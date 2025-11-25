@@ -14,6 +14,7 @@ import 'package:swapit_marketplace/data/services/cart_services.dart';
 import 'package:swapit_marketplace/data/services/cloudinary_services.dart';
 import 'package:swapit_marketplace/data/services/order_services.dart';
 import 'package:swapit_marketplace/data/services/review_and_chat_services.dart';
+import 'package:swapit_marketplace/data/services/favorite_services.dart';
 import '../services/user_services.dart';
 import '../services/product_services.dart';
 
@@ -26,8 +27,49 @@ final cartServiceProvider = Provider<CartService>((ref) => CartService());
 final orderServiceProvider = Provider<OrderService>((ref) => OrderService());
 final reviewServiceProvider = Provider<ReviewService>((ref) => ReviewService());
 final chatServiceProvider = Provider<ChatService>((ref) => ChatService());
+final favoriteServiceProvider = Provider<FavoriteService>((ref) => FavoriteService());
 final cloudinaryServiceProvider =
     Provider<CloudinaryService>((ref) => CloudinaryService());
+
+// Saved / Favorites Providers
+// savedProductIdsProvider: reads `savedProductIds` field from user document
+final savedProductIdsProvider = FutureProvider.family<List<String>, String>((ref, userId) async {
+  final userService = ref.watch(userServiceProvider);
+  final result = await userService.getSavedProductIds(userId);
+  return result.fold((_) => <String>[], (ids) => ids);
+});
+
+// favorites subcollection stream: returns list of productIds
+final favoritesSubcollectionProvider = StreamProvider.family<List<String>, String>((ref, userId) {
+  final favService = ref.watch(favoriteServiceProvider);
+  return favService.getFavoritesProductIdsStream(userId);
+});
+
+// Resolve saved product ids to actual ProductModel list (user doc)
+final savedProductsProvider = FutureProvider.family.autoDispose<List<ProductModel>, String>((ref, userId) async {
+  final ids = await ref.watch(savedProductIdsProvider(userId).future);
+  if (ids.isEmpty) return [];
+  final productService = ref.watch(productServiceProvider);
+  final results = await Future.wait(ids.map((id) => productService.getProductById(id)));
+  final products = <ProductModel>[];
+  for (final r in results) {
+    r.fold((_) {}, (p) => products.add(p));
+  }
+  return products;
+});
+
+// Resolve favorites subcollection ids to actual ProductModel list
+final favoritesSubcollectionProductsProvider = FutureProvider.family.autoDispose<List<ProductModel>, String>((ref, userId) async {
+  final ids = await ref.watch(favoritesSubcollectionProvider(userId).future);
+  if (ids.isEmpty) return [];
+  final productService = ref.watch(productServiceProvider);
+  final results = await Future.wait(ids.map((id) => productService.getProductById(id)));
+  final products = <ProductModel>[];
+  for (final r in results) {
+    r.fold((_) {}, (p) => products.add(p));
+  }
+  return products;
+});
 
 // Auth State Provider
 final authStateProvider = StreamProvider<User?>((ref) {
