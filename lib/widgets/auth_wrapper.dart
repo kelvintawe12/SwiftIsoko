@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../app.dart';
-import '../pages/splash_screen.dart';
+import 'package:swapit_marketplace/presentation/home/main_screen.dart';
+import 'package:swapit_marketplace/presentation/pages/splash_screen.dart';
+
+
 
 /// Auth wrapper that persists auth state across app restarts
 /// Listens to Firebase auth state changes and routes accordingly

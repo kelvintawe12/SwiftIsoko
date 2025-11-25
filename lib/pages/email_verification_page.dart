@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
-import '../app.dart';
+
+import 'package:swapit_marketplace/presentation/home/main_screen.dart';
+
 
 /// Email verification page shown after registration
 /// Includes auto-check and manual refresh options

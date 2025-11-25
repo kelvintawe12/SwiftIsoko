@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:swapit_marketplace/pages/email_verification_page.dart';
+import 'package:swapit_marketplace/presentation/home/main_screen.dart';
 import 'login_page.dart';
-import 'email_verification_page.dart';
+
 import '../../data/auth_service.dart';
 import '../../core/utils/validators.dart';
-import '../app.dart';
+
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});

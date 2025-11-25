@@ -1,9 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'presentation/widgets/auth_wrapper.dart';
-import 'core/constants/colors.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:swapit_marketplace/presentation/pages/splash_screen.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -57,7 +56,32 @@ class SwiftIsokoApp extends ConsumerWidget {
           filled: true,
         ),
       ),
-      home: const AuthWrapper(),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.dark,
+        ),
+        useMaterial3: true,
+        appBarTheme: const AppBarTheme(
+          centerTitle: true,
+          elevation: 0,
+        ),
+        cardTheme: CardThemeData(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          filled: true,
+        ),
+      ),
+      themeMode: ThemeMode.system,
+      home: const SplashScreen(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
