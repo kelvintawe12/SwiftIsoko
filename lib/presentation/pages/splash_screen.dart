@@ -9,11 +9,13 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
   late final AnimationController _ctrl;
   late final Animation<double> _scaleAnim;
   late final Animation<double> _rotAnim;
+  late final AnimationController _introCtrl;
   late final Animation<double> _fadeAnim;
+  late final Animation<double> _textScaleAnim;
 
   @override
   void initState() {
@@ -21,7 +23,13 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     _ctrl = AnimationController(vsync: this, duration: const Duration(seconds: 3));
     _scaleAnim = Tween<double>(begin: 0.96, end: 1.04).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
     _rotAnim = Tween<double>(begin: -0.02, end: 0.02).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
-    _fadeAnim = Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(parent: _ctrl, curve: const Interval(0.4, 1.0, curve: Curves.easeIn)));
+
+    // intro controller: one-shot fade/slide for title and button
+    _introCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 700));
+    _fadeAnim = Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(parent: _introCtrl, curve: Curves.easeOut));
+
+    // subtle text scale pulse (continuous)
+    _textScaleAnim = Tween<double>(begin: 0.99, end: 1.01).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
     _ctrl.addStatusListener((s) {
       if (s == AnimationStatus.completed) {
         _ctrl.reverse();
@@ -30,11 +38,14 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       }
     });
     _ctrl.forward();
+    // start intro animation once
+    _introCtrl.forward();
   }
 
   @override
   void dispose() {
     _ctrl.dispose();
+    _introCtrl.dispose();
     super.dispose();
   }
 
@@ -96,9 +107,18 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   ),
                 ),
                 const Spacer(),
-                // Title text with fade
-                FadeTransition(
-                  opacity: _fadeAnim,
+                // Title text with subtle continuous pulse and intro fade
+                AnimatedBuilder(
+                  animation: Listenable.merge([_ctrl, _introCtrl]),
+                  builder: (context, child) {
+                    return Opacity(
+                      opacity: _fadeAnim.value,
+                      child: Transform.scale(
+                        scale: _textScaleAnim.value,
+                        child: child,
+                      ),
+                    );
+                  },
                   child: const Text(
                     'Join SwiftIsoko for an\nunforgettable experience',
                     textAlign: TextAlign.center,
@@ -111,16 +131,13 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   ),
                 ),
                 const Spacer(),
-                // Get Started button with fade and slide up
+                // Get Started button: always visible, small intro slide
                 AnimatedBuilder(
-                  animation: _fadeAnim,
+                  animation: _introCtrl,
                   builder: (context, child) {
-                    return Opacity(
-                      opacity: _fadeAnim.value,
-                      child: Transform.translate(
-                        offset: Offset(0, 20 * (1 - _fadeAnim.value)),
-                        child: child,
-                      ),
+                    return Transform.translate(
+                      offset: Offset(0, 20 * (1 - _fadeAnim.value)),
+                      child: child,
                     );
                   },
                   child: SizedBox(
