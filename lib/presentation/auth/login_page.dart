@@ -85,6 +85,67 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     );
   }
 
+  Future<void> _showResetPasswordDialog() async {
+    final _resetController = TextEditingController(text: _emailController.text);
+    final _formKeyReset = GlobalKey<FormState>();
+    bool _sending = false;
+
+    await showDialog<void>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            title: const Text('Reset Password'),
+            content: Form(
+              key: _formKeyReset,
+              child: TextFormField(
+                controller: _resetController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  hintText: 'Enter your email',
+                ),
+                validator: Validators.validateEmail,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: _sending ? null : () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: _sending
+                    ? null
+                    : () async {
+                        if (!_formKeyReset.currentState!.validate()) return;
+                        setState(() => _sending = true);
+                        final authNotifier = ref.read(authNotifierProvider.notifier);
+                        final res = await authNotifier.resetPassword(_resetController.text.trim());
+                        if (!mounted) return;
+                        setState(() => _sending = false);
+                        res.fold((failure) {
+                          Navigator.of(context).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(failure.message), backgroundColor: Colors.red),
+                          );
+                        }, (_) {
+                          Navigator.of(context).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Password reset email sent. Check your inbox.')),
+                          );
+                        });
+                      },
+                child: _sending
+                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Text('Send'),
+              ),
+            ],
+          );
+        });
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -163,16 +224,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: _isLoading
-                        ? null
-                        : () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content:
-                                    Text('Forgot password feature coming soon'),
-                              ),
-                            );
-                          },
+                    onPressed: _isLoading ? null : _showResetPasswordDialog,
                     child: const Text('Forgot Password?'),
                   ),
                 ),
