@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/providers/providers.dart';
 import '../../data/providers/state_notifiers.dart';
+import '../chat/chat_list_screen.dart';
 import '../../data/utils/validators.dart';
 import '../../data/models/product.dart';
 import '../auth/login_page.dart';
@@ -424,7 +425,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     icon: Icons.chat_outlined,
                                     title: 'Messages',
                                     subtitle: 'Chat with buyers and sellers',
-                                    onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Messages coming soon'))),
+                                    onTap: () {
+                                      Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ChatListScreen()));
+                                    },
                                   ),
                                   _MenuItem(
                                     icon: Icons.location_on_outlined,

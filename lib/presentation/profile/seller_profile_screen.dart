@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/colors.dart';
 import '../../data/providers/providers.dart';
 import '../../data/models/product.dart';
+import '../chat/chat_screen.dart';
 import '../home/product_detail_screen.dart';
 
 class SellerProfileScreen extends ConsumerStatefulWidget {
@@ -21,8 +22,11 @@ class _SellerProfileScreenState extends ConsumerState<SellerProfileScreen> {
     final productsAsync = ref.watch(userProductsProvider(widget.sellerId));
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text('Seller'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
       body: userAsync.when(
         data: (user) {
@@ -31,36 +35,45 @@ class _SellerProfileScreenState extends ConsumerState<SellerProfileScreen> {
           }
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+            padding: const EdgeInsets.fromLTRB(16, 120, 16, 96),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 40,
-                      backgroundImage: user.profileImageUrl != null ? NetworkImage(user.profileImageUrl!) : null,
-                      backgroundColor: AppColors.primary,
-                      child: user.profileImageUrl == null ? Text(user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U', style: const TextStyle(color: Colors.white, fontSize: 28)) : null,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(user.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 6),
-                          if (user.location != null) Text(user.location!, style: const TextStyle(color: AppColors.textLight)),
-                          const SizedBox(height: 6),
-                          Row(children: [
-                            const Icon(Icons.star, color: Colors.amber, size: 18),
-                            const SizedBox(width: 6),
-                            Text('${user.ratingAverage.toStringAsFixed(1)} (${user.numRatings})'),
-                          ])
-                        ],
+                // Header card with avatar and meta
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 4))],
+                  ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 44,
+                        backgroundColor: AppColors.primary,
+                        backgroundImage: user.profileImageUrl != null ? NetworkImage(user.profileImageUrl!) : null,
+                        child: user.profileImageUrl == null ? Text(user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U', style: const TextStyle(color: Colors.white, fontSize: 32)) : null,
                       ),
-                    )
-                  ],
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(user.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 6),
+                            if (user.location != null) Text(user.location!, style: const TextStyle(color: AppColors.textLight)),
+                            const SizedBox(height: 6),
+                            Row(children: [
+                              const Icon(Icons.star, color: Colors.amber, size: 18),
+                              const SizedBox(width: 6),
+                              Text('${user.ratingAverage.toStringAsFixed(1)} (${user.numRatings})'),
+                            ])
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 12),
 
@@ -69,10 +82,10 @@ class _SellerProfileScreenState extends ConsumerState<SellerProfileScreen> {
                   children: [
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: () => _showMessageComposer(context),
+                        onPressed: () => _openChat(context),
                         icon: const Icon(Icons.message_outlined),
                         label: const Text('Message'),
-                        style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                        style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -80,7 +93,7 @@ class _SellerProfileScreenState extends ConsumerState<SellerProfileScreen> {
                       onPressed: () => _showRateDialog(context),
                       icon: const Icon(Icons.star_border),
                       label: const Text('Rate Seller'),
-                      style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                      style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                     ),
                   ],
                 ),
@@ -112,7 +125,6 @@ class _SellerProfileScreenState extends ConsumerState<SellerProfileScreen> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, s) => Center(child: Text('Error: $e')),
       ),
-
       // Bottom action bar with primary actions so it visually sits above any app-level nav
       bottomNavigationBar: BottomAppBar(
         elevation: 8,
@@ -122,7 +134,7 @@ class _SellerProfileScreenState extends ConsumerState<SellerProfileScreen> {
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () => _showMessageComposer(context),
+                  onPressed: () => _openChat(context),
                   icon: const Icon(Icons.message_outlined),
                   label: const Text('Message'),
                   style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
@@ -158,52 +170,23 @@ class _SellerProfileScreenState extends ConsumerState<SellerProfileScreen> {
     );
   }
 
-  void _showMessageComposer(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (ctx) {
-        final controller = TextEditingController();
-        return Padding(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text('Message ${widget.sellerId}', style: Theme.of(ctx).textTheme.titleMedium),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: controller,
-                  maxLines: 4,
-                  decoration: const InputDecoration(
-                    hintText: 'Write a message to the seller...',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          final text = controller.text.trim();
-                          Navigator.of(ctx).pop();
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text.isEmpty ? 'Empty message discarded' : 'Message sent (UI-only): $text')));
-                        },
-                        child: const Text('Send'),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-              ],
-            ),
-          ),
-        );
-      },
-    );
+
+
+  Future<void> _openChat(BuildContext context) async {
+    final currentUserId = ref.read(currentUserIdProvider);
+    if (currentUserId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please sign in to message sellers')));
+      return;
+    }
+
+    final chatService = ref.read(chatServiceProvider);
+    final res = await chatService.getOrCreateChat(currentUserId, widget.sellerId);
+
+    res.fold((failure) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(failure.message)));
+    }, (chat) {
+      Navigator.of(context).push(MaterialPageRoute(builder: (_) => ChatScreen(chatId: chat.id, otherUserId: widget.sellerId)));
+    });
   }
 
   void _showRateDialog(BuildContext context) {

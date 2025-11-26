@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'core/constants/colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:swapit_marketplace/presentation/pages/splash_screen.dart';
 import 'firebase_options.dart';
@@ -34,9 +35,10 @@ class SwiftIsokoApp extends ConsumerWidget {
       title: 'SwiftIsoko',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
+          seedColor: AppColors.primary,
           brightness: Brightness.light,
         ),
+        scaffoldBackgroundColor: AppColors.background,
         useMaterial3: true,
         appBarTheme: const AppBarTheme(
           centerTitle: true,
@@ -53,11 +55,18 @@ class SwiftIsokoApp extends ConsumerWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           filled: true,
+          fillColor: Colors.white,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
         ),
       ),
       darkTheme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
+          seedColor: AppColors.primary,
           brightness: Brightness.dark,
         ),
         useMaterial3: true,
@@ -76,6 +85,13 @@ class SwiftIsokoApp extends ConsumerWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           filled: true,
+          fillColor: Colors.white10,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
         ),
       ),
       themeMode: ThemeMode.system,
