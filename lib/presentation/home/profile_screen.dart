@@ -489,13 +489,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             onPressed: () async {
               Navigator.of(dialogCtx).pop();
 
+              // Capture UI helpers before awaiting to avoid using BuildContext
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
+              final navigator = Navigator.of(context);
+
               final authNotifier = ref.read(authNotifierProvider.notifier);
               final result = await authNotifier.signOut();
 
               if (!mounted) return;
-
-              final scaffoldMessenger = ScaffoldMessenger.of(context);
-              final navigator = Navigator.of(context);
 
               result.fold(
                 (failure) {

@@ -628,6 +628,10 @@ class _ProfilePageState extends State<ProfilePage> {
                       const SizedBox(width: 8),
                       ElevatedButton(
                         onPressed: () async {
+                          // Capture navigator and scaffold before awaiting
+                          final parentNavigator = Navigator.of(context);
+                          final parentScaffold = ScaffoldMessenger.of(context);
+
                           final svc = await ProfileService.getInstance();
                           await svc.save(
                             nameCtrl.text.trim(),
@@ -639,8 +643,8 @@ class _ProfilePageState extends State<ProfilePage> {
                           );
                           await _loadProfile();
                           if (mounted) {
-                            Navigator.of(ctx).pop();
-                            ScaffoldMessenger.of(context).showSnackBar(
+                            parentNavigator.pop();
+                            parentScaffold.showSnackBar(
                               const SnackBar(
                                   content: Text('Profile updated')),
                             );

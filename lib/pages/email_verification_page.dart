@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
@@ -33,7 +35,10 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
       // Check email verification status every 3 seconds
       _timer = Timer.periodic(
         const Duration(seconds: 3),
-        (_) => _checkEmailVerified(),
+        (_) {
+          if (!mounted) return;
+          _checkEmailVerified();
+        },
       );
     }
   }
@@ -45,6 +50,9 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
   }
 
   Future<void> _checkEmailVerified() async {
+    // Capture navigator before awaiting to avoid using BuildContext across an async gap
+    final navigator = Navigator.of(context);
+
     await FirebaseAuth.instance.currentUser?.reload();
 
     if (!mounted) return;
@@ -58,7 +66,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
       _timer?.cancel();
 
       // Navigate to main screen after verification
-      Navigator.of(context).pushReplacement(
+      navigator.pushReplacement(
         MaterialPageRoute(
           builder: (context) => const MainScreen(),
         ),
@@ -67,8 +75,11 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
   }
 
   Future<void> _sendVerificationEmail() async {
+    // Capture scaffold messenger before any awaits to avoid using BuildContext across async gaps
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
     try {
       final user = FirebaseAuth.instance.currentUser;
+
       await user?.sendEmailVerification();
 
       if (!mounted) return;
@@ -98,7 +109,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
         }
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      scaffoldMessenger.showSnackBar(
         const SnackBar(
           content: Text('Verification email sent!'),
           backgroundColor: Colors.green,
@@ -107,7 +118,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      scaffoldMessenger.showSnackBar(
         SnackBar(
           content: Text('Failed to send email: $e'),
           backgroundColor: Colors.red,
