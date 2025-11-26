@@ -305,10 +305,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text('New arrivals', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    Row(children: [
-                      IconButton(onPressed: () => _showFilterSheet(context, productList, maxPossible), icon: const Icon(Icons.filter_list, color: AppColors.textLight)),
-                      TextButton(onPressed: () {}, child: const Text('View all')),
-                    ])
+                    Flexible(
+                      child: Row(mainAxisSize: MainAxisSize.min, children: [
+                        IconButton(onPressed: () => _showFilterSheet(context, productList, maxPossible), icon: const Icon(Icons.filter_list, color: AppColors.textLight)),
+                        TextButton(onPressed: () {}, child: const Text('View all')),
+                      ]),
+                    )
                   ],
                 ),
                 const SizedBox(height: 12),
