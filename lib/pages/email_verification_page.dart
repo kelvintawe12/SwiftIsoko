@@ -47,6 +47,8 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
   Future<void> _checkEmailVerified() async {
     await FirebaseAuth.instance.currentUser?.reload();
 
+    if (!mounted) return;
+
     setState(() {
       _isEmailVerified =
           FirebaseAuth.instance.currentUser?.emailVerified ?? false;
@@ -56,13 +58,11 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
       _timer?.cancel();
 
       // Navigate to main screen after verification
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => const MainScreen(),
-          ),
-        );
-      }
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const MainScreen(),
+        ),
+      );
     }
   }
 
@@ -70,6 +70,8 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
     try {
       final user = FirebaseAuth.instance.currentUser;
       await user?.sendEmailVerification();
+
+      if (!mounted) return;
 
       setState(() {
         _canResendEmail = false;
@@ -79,34 +81,38 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
       // Start countdown for resend button
       Timer.periodic(const Duration(seconds: 1), (timer) {
         if (_resendCountdown > 0) {
+          if (!mounted) {
+            timer.cancel();
+            return;
+          }
           setState(() {
             _resendCountdown--;
           });
         } else {
-          setState(() {
-            _canResendEmail = true;
-          });
+          if (mounted) {
+            setState(() {
+              _canResendEmail = true;
+            });
+          }
           timer.cancel();
         }
       });
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Verification email sent!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Verification email sent!'),
+          backgroundColor: Colors.green,
+        ),
+      );
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to send email: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to send email: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -117,13 +123,12 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
+          leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF2D3436)),
           onPressed: () async {
             await FirebaseAuth.instance.signOut();
-            if (mounted) {
-              Navigator.of(context).pop();
-            }
+            if (!mounted) return;
+            Navigator.of(context).pop();
           },
         ),
       ),
@@ -138,7 +143,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6C63E8).withOpacity(0.1),
+                  color: const Color.fromRGBO(108, 99, 232, 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(

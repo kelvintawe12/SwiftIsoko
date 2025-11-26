@@ -6,11 +6,16 @@ import '../../data/utils/validators.dart';
 import '../../data/models/product.dart';
 import '../auth/login_page.dart';
 
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  @override
+  Widget build(BuildContext context) {
     final currentUser = ref.watch(currentUserProvider);
 
     return Scaffold(
@@ -439,7 +444,7 @@ class ProfileScreen extends ConsumerWidget {
                                     title: 'Sign Out',
                                     subtitle: 'Sign out of your account',
                                     textColor: Colors.red,
-                                    onTap: () => _showSignOutDialog(context, ref),
+                                    onTap: () => _showSignOutDialog(context),
                                   ),
                                 ],
                               ),
@@ -469,27 +474,32 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  void _showSignOutDialog(BuildContext context, WidgetRef ref) {
+  void _showSignOutDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogCtx) => AlertDialog(
         title: const Text('Sign Out'),
         content: const Text('Are you sure you want to sign out?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogCtx).pop(),
             child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () async {
-              Navigator.of(context).pop();
+              Navigator.of(dialogCtx).pop();
 
               final authNotifier = ref.read(authNotifierProvider.notifier);
               final result = await authNotifier.signOut();
 
+              if (!mounted) return;
+
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
+              final navigator = Navigator.of(context);
+
               result.fold(
                 (failure) {
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  scaffoldMessenger.showSnackBar(
                     SnackBar(
                       content: Text(failure.message),
                       backgroundColor: Colors.red,
@@ -497,7 +507,7 @@ class ProfileScreen extends ConsumerWidget {
                   );
                 },
                 (_) {
-                  Navigator.of(context).pushAndRemoveUntil(
+                  navigator.pushAndRemoveUntil(
                     MaterialPageRoute(builder: (_) => const SignInScreen()),
                     (route) => false,
                   );

@@ -113,10 +113,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
-                        ),
+                            color: const Color.fromRGBO(0, 0, 0, 0.2),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
                       ],
                     ),
                     child: Icon(

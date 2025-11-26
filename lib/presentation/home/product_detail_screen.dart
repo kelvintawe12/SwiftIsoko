@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../data/models/product.dart';
+import '../profile/seller_profile_screen.dart';
 import '../../data/models/cart_item.dart';
 import '../../data/utils/validators.dart';
 import '../../data/providers/providers.dart';
@@ -295,8 +296,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color:
-                              _getStatusColor(product.status).withOpacity(0.1),
+                          color: _getStatusColor(product.status)
+                              .withAlpha((0.1 * 255).round()),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
                             color: _getStatusColor(product.status),
@@ -338,11 +339,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                           horizontal: 12,
                           vertical: 8,
                         ),
-                        decoration: BoxDecoration(
+                          decoration: BoxDecoration(
                           color: Theme.of(context)
-                              .colorScheme
-                              .primaryContainer
-                              .withOpacity(0.5),
+                            .colorScheme
+                            .primaryContainer
+                            .withAlpha((0.5 * 255).round()),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
@@ -371,9 +372,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                           horizontal: 12,
                           vertical: 8,
                         ),
-                        decoration: BoxDecoration(
+                          decoration: BoxDecoration(
                           color: _getConditionColor(product.condition)
-                              .withOpacity(0.1),
+                              .withAlpha((0.1 * 255).round()),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: _getConditionColor(product.condition),
@@ -473,16 +474,13 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                     ),
                                     const SizedBox(height: 4),
                                     TextButton.icon(
-                                      onPressed: () {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                              'View seller profile coming soon!',
-                                            ),
-                                          ),
-                                        );
-                                      },
+                                      onPressed: product.ownerId.isNotEmpty
+                                          ? () {
+                                              Navigator.of(context).push(MaterialPageRoute(
+                                                builder: (_) => SellerProfileScreen(sellerId: product.ownerId),
+                                              ));
+                                            }
+                                          : null,
                                       icon: const Icon(Icons.person_outline),
                                       label: const Text('View Profile'),
                                       style: TextButton.styleFrom(
@@ -560,7 +558,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             color: Theme.of(context).scaffoldBackgroundColor,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: const Color.fromRGBO(0, 0, 0, 0.1),
                 blurRadius: 4,
                 offset: const Offset(0, -2),
               ),

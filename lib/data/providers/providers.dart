@@ -138,6 +138,12 @@ final currentUserProvider = StreamProvider<UserModel?>((ref) {
   );
 });
 
+// User by ID provider (stream)
+final userByIdProvider = StreamProvider.family<UserModel?, String>((ref, uid) {
+  final userService = ref.watch(userServiceProvider);
+  return userService.getUserStream(uid);
+});
+
 // Current User ID Provider
 final currentUserIdProvider = Provider<String?>((ref) {
   final authState = ref.watch(authStateProvider);

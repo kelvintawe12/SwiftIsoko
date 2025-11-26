@@ -96,7 +96,7 @@ class ConcentricCirclesPainter extends CustomPainter {
 
     // Paint for concentric circles
     final circlePaint = Paint()
-      ..color = Colors.white.withOpacity(0.2)
+      ..color = const Color.fromRGBO(255, 255, 255, 0.2)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
@@ -108,7 +108,7 @@ class ConcentricCirclesPainter extends CustomPainter {
 
     // Draw curved connecting lines from center to avatars
     final linePaint = Paint()
-      ..color = Colors.white.withOpacity(0.25)
+      ..color = const Color.fromRGBO(255, 255, 255, 0.25)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
 

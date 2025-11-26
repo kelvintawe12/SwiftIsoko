@@ -358,7 +358,7 @@ class CartScreen extends ConsumerWidget {
                   color: Theme.of(context).cardColor,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: const Color.fromRGBO(0, 0, 0, 0.1),
                       blurRadius: 4,
                       offset: const Offset(0, -2),
                     ),
