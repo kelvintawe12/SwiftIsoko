@@ -203,8 +203,9 @@ class Validators {
     }
 
     // Penalty for common patterns
-    if (RegExp(r'(.)\1{2,}').hasMatch(password))
+    if (RegExp(r'(.)\1{2,}').hasMatch(password)) {
       strength -= 10; // Repeated characters
+    }
     if (RegExp(r'(012|123|234|345|456|567|678|789|890)').hasMatch(password)) {
       strength -= 10; // Sequential numbers
     }

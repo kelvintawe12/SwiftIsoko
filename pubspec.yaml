@@ -62,4 +62,4 @@ flutter:
 
   assets:
     - assets/images/
-    - assets/images/avatars/
+    # removed non-existent avatars directory to avoid build errors

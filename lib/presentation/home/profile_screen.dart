@@ -158,17 +158,22 @@ class ProfileScreen extends ConsumerWidget {
                               // My Listings
                               userProductsAsync.when(
                                 data: (products) {
-                                  if (products.isEmpty) {
+                                  // Sort client-side by createdAt desc to preserve UX without
+                                  // relying on Firestore server-side ordering (avoids composite index requirements).
+                                  final sorted = List<ProductModel>.from(products)
+                                    ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+                                  if (sorted.isEmpty) {
                                     return const Center(
                                         child: Text('No listings yet'));
                                   }
 
                                   return ListView.separated(
-                                    itemCount: products.length,
+                                    itemCount: sorted.length,
                                     separatorBuilder: (_, __) => const SizedBox(height: 8),
                                     padding: const EdgeInsets.symmetric(vertical: 12),
                                     itemBuilder: (context, index) {
-                                      final p = products[index];
+                                      final p = sorted[index];
                                       return ListTile(
                                         leading: p.imageUrls.isNotEmpty
                                             ? ClipRRect(
@@ -220,16 +225,20 @@ class ProfileScreen extends ConsumerWidget {
                               // Purchases (orders)
                               userOrdersAsync.when(
                                 data: (orders) {
-                                  if (orders.isEmpty) {
+                                  // Sort client-side by createdAt desc to avoid requiring a composite index.
+                                  final sorted = List.from(orders)
+                                    ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+                                  if (sorted.isEmpty) {
                                     return const Center(child: Text('No purchases yet'));
                                   }
 
                                   return ListView.separated(
                                     padding: const EdgeInsets.symmetric(vertical: 12),
-                                    itemCount: orders.length,
+                                    itemCount: sorted.length,
                                     separatorBuilder: (_, __) => const SizedBox(height: 8),
                                     itemBuilder: (context, index) {
-                                      final o = orders[index];
+                                      final o = sorted[index];
                                       return ListTile(
                                         leading: const Icon(Icons.shopping_bag_outlined),
                                         title: Text('Order • ${o.totalAmount.toStringAsFixed(0)} ${o.paymentMethod ?? ''}'),

@@ -107,6 +107,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           final maxFound = allPrices.isNotEmpty ? allPrices.reduce((a, b) => a > b ? a : b) : 2000.0;
           final maxPossible = (maxFound <= 0 ? 2000.0 : maxFound).ceilToDouble();
 
+          final heroAsync = ref.watch(heroProductsProvider);
+
           return SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
             child: Column(
@@ -169,7 +171,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(20),
                     child: Builder(builder: (context) {
-                      final slides = productList.take(6).toList();
+                      final slides = heroAsync.maybeWhen(
+                        data: (h) => h.take(6).toList(),
+                        orElse: () => productList.take(6).toList(),
+                      );
 
                       if (slides.isEmpty) {
                         // fallback to static images
@@ -450,7 +455,7 @@ class _SmallCard extends ConsumerWidget {
 
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: SizedBox(
         width: 150,
         child: Card(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

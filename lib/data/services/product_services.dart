@@ -111,6 +111,17 @@ class ProductService {
             .toList());
   }
 
+  // Get user's products without server-side ordering to avoid composite index requirements.
+  Stream<List<ProductModel>> getUserProductsNoOrder(String userId) {
+    return _firestore
+        .collection('products')
+        .where('ownerId', isEqualTo: userId)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => ProductModel.fromFirestore(doc))
+            .toList());
+  }
+
   // Search products
   Future<Either<Failure, List<ProductModel>>> searchProducts({
     required String query,

@@ -151,7 +151,8 @@ final currentUserIdProvider = Provider<String?>((ref) {
 final userProductsProvider = StreamProvider.family<List<ProductModel>, String>(
   (ref, userId) {
     final productService = ref.watch(productServiceProvider);
-    return productService.getUserProducts(userId);
+    // Use no-order variant to avoid composite index requirements on Firestore.
+    return productService.getUserProductsNoOrder(userId);
   },
 );
 
@@ -163,6 +164,12 @@ final productsStreamProvider =
     status: ProductStatus.active,
     limit: 50,
   );
+});
+
+// Hero Products (first 6) for top slideshow
+final heroProductsProvider = StreamProvider.autoDispose<List<ProductModel>>((ref) {
+  final productService = ref.watch(productServiceProvider);
+  return productService.getProductsStream(status: ProductStatus.active, limit: 6);
 });
 
 // Products by Category Provider
@@ -236,7 +243,9 @@ final userOrdersProvider = StreamProvider.autoDispose<List<OrderModel>>((ref) {
   }
 
   final orderService = ref.watch(orderServiceProvider);
-  return orderService.getUserOrders(userId);
+  // Use no-order variant and perform client-side sorting where needed to avoid
+  // Firestore composite index requirements.
+  return orderService.getUserOrdersNoOrder(userId);
 });
 
 // Single Order Provider

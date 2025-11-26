@@ -23,7 +23,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
   String? _selectedCategory;
   ProductCondition? _selectedCondition;
   String _selectedCurrency = 'RWF';
-  List<File> _selectedImages = [];
+  final List<File> _selectedImages = [];
   final ImagePicker _imagePicker = ImagePicker();
 
   @override
@@ -234,7 +234,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
 
                 // Category
                 DropdownButtonFormField<String>(
-                  value: _selectedCategory,
+                  initialValue: _selectedCategory,
                   decoration: const InputDecoration(
                     labelText: 'Category',
                     prefixIcon: Icon(Icons.category_outlined),
@@ -258,7 +258,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
 
                 // Condition
                 DropdownButtonFormField<ProductCondition>(
-                  value: _selectedCondition,
+                  initialValue: _selectedCondition,
                   decoration: const InputDecoration(
                     labelText: 'Condition',
                     prefixIcon: Icon(Icons.verified_outlined),
@@ -305,7 +305,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                     const SizedBox(width: 16),
                     Expanded(
                       child: DropdownButtonFormField<String>(
-                        value: _selectedCurrency,
+                        initialValue: _selectedCurrency,
                         decoration: const InputDecoration(
                           labelText: 'Currency',
                         ),

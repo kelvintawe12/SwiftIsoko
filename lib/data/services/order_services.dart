@@ -139,6 +139,16 @@ class OrderService {
             snapshot.docs.map((doc) => OrderModel.fromFirestore(doc)).toList());
   }
 
+  // Get user orders without server-side ordering to avoid composite index requirements.
+  Stream<List<OrderModel>> getUserOrdersNoOrder(String userId) {
+    return _firestore
+        .collection('orders')
+        .where('userId', isEqualTo: userId)
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => OrderModel.fromFirestore(doc)).toList());
+  }
+
   // Get order by ID
   Future<Either<Failure, OrderModel>> getOrderById(String orderId) async {
     try {
