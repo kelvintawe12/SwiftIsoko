@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/providers/state_notifiers.dart';
 import '../../data/utils/validators.dart';
+import 'login_page.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
@@ -59,7 +60,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         showDialog(
           context: context,
           barrierDismissible: false,
-          builder: (context) => AlertDialog(
+          builder: (dialogContext) => AlertDialog(
             icon: const Icon(Icons.check_circle, color: Colors.green, size: 64),
             title: const Text('Account Created!'),
             content: const Text(
@@ -69,8 +70,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pop();
+                  Navigator.of(dialogContext).pop(); // Close dialog
+                  Navigator.of(context).pop(); // Go back to login screen
                 },
                 child: const Text('OK'),
               ),
@@ -109,6 +110,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Create Account'),
       ),
@@ -133,7 +135,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   'Create your account to get started',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.grey[600],
+                        color: Theme.of(context).textTheme.bodySmall?.color,
                       ),
                 ),
                 const SizedBox(height: 32),
@@ -250,7 +252,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
                         'OR',
-                        style: TextStyle(color: Colors.grey[600]),
+                        style: TextStyle(
+                          color: Theme.of(context).textTheme.bodySmall?.color,
+                        ),
                       ),
                     ),
                     const Expanded(child: Divider()),
@@ -282,8 +286,38 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   'By signing up, you agree to our Terms of Service and Privacy Policy',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
+                        color: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.color
+                            ?.withOpacity(0.7),
                       ),
+                ),
+                const SizedBox(height: 32),
+
+                // Sign in link
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Already have an account? ',
+                      style: TextStyle(
+                        color: Theme.of(context).textTheme.bodySmall?.color,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: _isLoading
+                          ? null
+                          : () {
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                  builder: (_) => const SignInScreen(),
+                                ),
+                              );
+                            },
+                      child: const Text('Sign In'),
+                    ),
+                  ],
                 ),
               ],
             ),

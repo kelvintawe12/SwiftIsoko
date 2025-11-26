@@ -119,24 +119,33 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                     : () async {
                         if (!formKeyReset.currentState!.validate()) return;
                         setState(() => sending = true);
-                        final authNotifier = ref.read(authNotifierProvider.notifier);
-                        final res = await authNotifier.resetPassword(resetController.text.trim());
+                        final authNotifier =
+                            ref.read(authNotifierProvider.notifier);
+                        final res = await authNotifier
+                            .resetPassword(resetController.text.trim());
                         if (!mounted) return;
                         setState(() => sending = false);
                         res.fold((failure) {
                           Navigator.of(context).pop();
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(failure.message), backgroundColor: Colors.red),
+                            SnackBar(
+                                content: Text(failure.message),
+                                backgroundColor: Colors.red),
                           );
                         }, (_) {
                           Navigator.of(context).pop();
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Password reset email sent. Check your inbox.')),
+                            const SnackBar(
+                                content: Text(
+                                    'Password reset email sent. Check your inbox.')),
                           );
                         });
                       },
                 child: sending
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2))
                     : const Text('Send'),
               ),
             ],
@@ -149,6 +158,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -177,7 +187,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   'Sign in to continue',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.grey[600],
+                        color: Theme.of(context).textTheme.bodySmall?.color,
                       ),
                 ),
                 const SizedBox(height: 48),
@@ -260,7 +270,9 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
                         'OR',
-                        style: TextStyle(color: Colors.grey[600]),
+                        style: TextStyle(
+                          color: Theme.of(context).textTheme.bodySmall?.color,
+                        ),
                       ),
                     ),
                     const Expanded(child: Divider()),
@@ -293,7 +305,9 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   children: [
                     Text(
                       "Don't have an account? ",
-                      style: TextStyle(color: Colors.grey[600]),
+                      style: TextStyle(
+                        color: Theme.of(context).textTheme.bodySmall?.color,
+                      ),
                     ),
                     TextButton(
                       onPressed: _isLoading

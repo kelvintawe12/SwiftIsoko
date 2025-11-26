@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'bloc/cart/cart_bloc.dart';
 import 'package:swapit_marketplace/presentation/pages/splash_screen.dart';
+import 'package:swapit_marketplace/data/providers/preferences_provider.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -36,6 +37,9 @@ class SwiftIsokoApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the theme mode from preferences
+    final themeMode = ref.watch(themeModeProvider);
+
     return MaterialApp(
       title: 'SwiftIsoko',
       theme: ThemeData(
@@ -65,7 +69,8 @@ class SwiftIsokoApp extends ConsumerWidget {
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
       ),
@@ -95,11 +100,12 @@ class SwiftIsokoApp extends ConsumerWidget {
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
       ),
-      themeMode: ThemeMode.system,
+      themeMode: themeMode, // Use theme mode from SharedPreferences
       home: const SplashScreen(),
       debugShowCheckedModeBanner: false,
     );

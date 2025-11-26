@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/providers/providers.dart';
 import '../../data/providers/state_notifiers.dart';
+import '../../data/providers/preferences_provider.dart';
 import '../chat/chat_list_screen.dart';
 import '../../data/utils/validators.dart';
 import '../../data/models/product.dart';
 import '../auth/login_page.dart';
+import 'settings_screen.dart';
+import '../../core/utils/app_localizations.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -18,16 +21,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final currentUser = ref.watch(currentUserProvider);
+    final language = ref.watch(languageProvider);
+    final localizations = AppLocalizations(language);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: Text(localizations.profile),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Settings coming soon')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
               );
             },
           ),
@@ -100,13 +106,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               const SizedBox(width: 6),
                               Text(
                                 user.ratingAverage.toStringAsFixed(1),
-                                style:
-                                    const TextStyle(fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
                               ),
                               const SizedBox(width: 6),
                               Text('(${user.numRatings} reviews)',
-                                  style:
-                                      TextStyle(color: Colors.grey[600])),
+                                  style: TextStyle(color: Colors.grey[600])),
                             ],
                           ),
                         ],
@@ -149,12 +154,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           isScrollable: true,
                           labelColor: Theme.of(context).colorScheme.primary,
                           unselectedLabelColor: Colors.grey[600],
-                          tabs: const [
-                            Tab(text: 'My Listings'),
-                            Tab(text: 'Purchases'),
-                            Tab(text: 'Made'),
-                            Tab(text: 'Saved'),
-                            Tab(text: 'More'),
+                          tabs: [
+                            Tab(text: localizations.myListings),
+                            Tab(text: localizations.myOrders),
+                            const Tab(text: 'Made'),
+                            const Tab(text: 'Saved'),
+                            const Tab(text: 'More'),
                           ],
                         ),
                         const SizedBox(height: 8),
@@ -166,8 +171,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 data: (products) {
                                   // Sort client-side by createdAt desc to preserve UX without
                                   // relying on Firestore server-side ordering (avoids composite index requirements).
-                                  final sorted = List<ProductModel>.from(products)
-                                    ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+                                  final sorted =
+                                      List<ProductModel>.from(products)
+                                        ..sort((a, b) =>
+                                            b.createdAt.compareTo(a.createdAt));
 
                                   if (sorted.isEmpty) {
                                     return const Center(
@@ -176,14 +183,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                                   return ListView.separated(
                                     itemCount: sorted.length,
-                                    separatorBuilder: (_, __) => const SizedBox(height: 8),
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    separatorBuilder: (_, __) =>
+                                        const SizedBox(height: 8),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12),
                                     itemBuilder: (context, index) {
                                       final p = sorted[index];
                                       return ListTile(
                                         leading: p.imageUrls.isNotEmpty
                                             ? ClipRRect(
-                                                borderRadius: BorderRadius.circular(8),
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
                                                 child: Image.network(
                                                   p.imageUrls.first,
                                                   width: 60,
@@ -196,22 +206,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                                 height: 60,
                                                 decoration: BoxDecoration(
                                                   color: Colors.grey[100],
-                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
                                                 ),
-                                                child: const Icon(Icons.image_outlined),
+                                                child: const Icon(
+                                                    Icons.image_outlined),
                                               ),
-                                        title: Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis),
-                                        subtitle: Text('${p.currency} ${p.price.toStringAsFixed(0)}'),
+                                        title: Text(p.name,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis),
+                                        subtitle: Text(
+                                            '${p.currency} ${p.price.toStringAsFixed(0)}'),
                                         trailing: Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 6),
                                           decoration: BoxDecoration(
-                                            color: p.status == ProductStatus.sold ? Colors.green[50] : Colors.grey[100],
-                                            borderRadius: BorderRadius.circular(12),
+                                            color:
+                                                p.status == ProductStatus.sold
+                                                    ? Colors.green[50]
+                                                    : Colors.grey[100],
+                                            borderRadius:
+                                                BorderRadius.circular(12),
                                           ),
                                           child: Text(
                                             p.status.name.toUpperCase(),
                                             style: TextStyle(
-                                              color: p.status == ProductStatus.sold ? Colors.green : Colors.grey[700],
+                                              color:
+                                                  p.status == ProductStatus.sold
+                                                      ? Colors.green
+                                                      : Colors.grey[700],
                                               fontWeight: FontWeight.bold,
                                               fontSize: 12,
                                             ),
@@ -224,8 +247,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     },
                                   );
                                 },
-                                loading: () => const Center(child: CircularProgressIndicator()),
-                                error: (e, s) => Center(child: Text('Error: $e')),
+                                loading: () => const Center(
+                                    child: CircularProgressIndicator()),
+                                error: (e, s) =>
+                                    Center(child: Text('Error: $e')),
                               ),
 
                               // Purchases (orders)
@@ -233,121 +258,207 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 data: (orders) {
                                   // Sort client-side by createdAt desc to avoid requiring a composite index.
                                   final sorted = List.from(orders)
-                                    ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+                                    ..sort((a, b) =>
+                                        b.createdAt.compareTo(a.createdAt));
 
                                   if (sorted.isEmpty) {
-                                    return const Center(child: Text('No purchases yet'));
+                                    return const Center(
+                                        child: Text('No purchases yet'));
                                   }
 
                                   return ListView.separated(
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12),
                                     itemCount: sorted.length,
-                                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                                    separatorBuilder: (_, __) =>
+                                        const SizedBox(height: 8),
                                     itemBuilder: (context, index) {
                                       final o = sorted[index];
                                       return ListTile(
-                                        leading: const Icon(Icons.shopping_bag_outlined),
-                                        title: Text('Order • ${o.totalAmount.toStringAsFixed(0)} ${o.paymentMethod ?? ''}'),
-                                        subtitle: Text('${o.status.name} • ${o.createdAt.toLocal().toString().split(' ').first}'),
+                                        leading: const Icon(
+                                            Icons.shopping_bag_outlined),
+                                        title: Text(
+                                            'Order • ${o.totalAmount.toStringAsFixed(0)} ${o.paymentMethod ?? ''}'),
+                                        subtitle: Text(
+                                            '${o.status.name} • ${o.createdAt.toLocal().toString().split(' ').first}'),
                                         onTap: () {},
                                       );
                                     },
                                   );
                                 },
-                                loading: () => const Center(child: CircularProgressIndicator()),
-                                error: (e, s) => Center(child: Text('Error: $e')),
+                                loading: () => const Center(
+                                    child: CircularProgressIndicator()),
+                                error: (e, s) =>
+                                    Center(child: Text('Error: $e')),
                               ),
 
                               // Made (sold items)
                               userProductsAsync.when(
                                 data: (products) {
-                                  final sold = products.where((p) => p.status == ProductStatus.sold).toList();
+                                  final sold = products
+                                      .where(
+                                          (p) => p.status == ProductStatus.sold)
+                                      .toList();
                                   if (sold.isEmpty) {
-                                    return const Center(child: Text('No sold items yet'));
+                                    return const Center(
+                                        child: Text('No sold items yet'));
                                   }
 
                                   return ListView.separated(
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12),
                                     itemCount: sold.length,
-                                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                                    separatorBuilder: (_, __) =>
+                                        const SizedBox(height: 8),
                                     itemBuilder: (context, index) {
                                       final p = sold[index];
                                       return ListTile(
                                         leading: p.imageUrls.isNotEmpty
-                                            ? Image.network(p.imageUrls.first, width: 60, height: 60, fit: BoxFit.cover)
+                                            ? Image.network(p.imageUrls.first,
+                                                width: 60,
+                                                height: 60,
+                                                fit: BoxFit.cover)
                                             : const Icon(Icons.image_outlined),
                                         title: Text(p.name),
-                                        subtitle: Text('${p.currency} ${p.price.toStringAsFixed(0)}'),
+                                        subtitle: Text(
+                                            '${p.currency} ${p.price.toStringAsFixed(0)}'),
                                       );
                                     },
                                   );
                                 },
-                                loading: () => const Center(child: CircularProgressIndicator()),
-                                error: (e, s) => Center(child: Text('Error: $e')),
+                                loading: () => const Center(
+                                    child: CircularProgressIndicator()),
+                                error: (e, s) =>
+                                    Center(child: Text('Error: $e')),
                               ),
 
                               // Saved: show both user-doc savedProductIds and favorites subcollection
                               Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
                                 child: Column(
                                   children: [
                                     // Saved (user doc)
                                     Align(
                                       alignment: Alignment.centerLeft,
                                       child: Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-                                        child: Text('Saved', style: Theme.of(context).textTheme.titleMedium),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8.0, vertical: 8.0),
+                                        child: Text('Saved',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .titleMedium),
                                       ),
                                     ),
                                     SizedBox(
                                       height: 160,
-                                      child: Consumer(builder: (context, innerRef, _) {
-                                        final savedAsync = innerRef.watch(savedProductsProvider(user.uid));
+                                      child: Consumer(
+                                          builder: (context, innerRef, _) {
+                                        final savedAsync = innerRef.watch(
+                                            savedProductsProvider(user.uid));
                                         return savedAsync.when(
                                           data: (products) {
                                             if (products.isEmpty) {
-                                              return const Center(child: Text('No saved items (user document).'));
+                                              return const Center(
+                                                  child: Text(
+                                                      'No saved items (user document).'));
                                             }
                                             return ListView.separated(
                                               scrollDirection: Axis.horizontal,
-                                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 8),
                                               itemCount: products.length,
-                                              separatorBuilder: (_, __) => const SizedBox(width: 8),
+                                              separatorBuilder: (_, __) =>
+                                                  const SizedBox(width: 8),
                                               itemBuilder: (context, i) {
                                                 final p = products[i];
                                                 return SizedBox(
                                                   width: 260,
                                                   child: Card(
-                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        12)),
                                                     child: Row(
                                                       children: [
-                                                        if (p.imageUrls.isNotEmpty)
+                                                        if (p.imageUrls
+                                                            .isNotEmpty)
                                                           ClipRRect(
-                                                            borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), bottomLeft: Radius.circular(12)),
-                                                            child: Image.network(p.imageUrls.first, width: 90, height: 90, fit: BoxFit.cover),
+                                                            borderRadius: const BorderRadius
+                                                                .only(
+                                                                topLeft: Radius
+                                                                    .circular(
+                                                                        12),
+                                                                bottomLeft: Radius
+                                                                    .circular(
+                                                                        12)),
+                                                            child:
+                                                                Image.network(
+                                                                    p.imageUrls
+                                                                        .first,
+                                                                    width: 90,
+                                                                    height: 90,
+                                                                    fit: BoxFit
+                                                                        .cover),
                                                           )
                                                         else
-                                                          Container(width: 90, height: 90, color: Colors.grey[100], child: const Icon(Icons.image_outlined)),
-                                                        const SizedBox(width: 8),
+                                                          Container(
+                                                              width: 90,
+                                                              height: 90,
+                                                              color: Colors
+                                                                  .grey[100],
+                                                              child: const Icon(
+                                                                  Icons
+                                                                      .image_outlined)),
+                                                        const SizedBox(
+                                                            width: 8),
                                                         Expanded(
                                                           child: Padding(
-                                                            padding: const EdgeInsets.all(8.0),
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(8.0),
                                                             child: Column(
-                                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                                              mainAxisAlignment: MainAxisAlignment.center,
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .center,
                                                               children: [
-                                                                Text(p.name, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold)),
-                                                                const SizedBox(height: 6),
+                                                                Text(p.name,
+                                                                    maxLines: 2,
+                                                                    overflow:
+                                                                        TextOverflow
+                                                                            .ellipsis,
+                                                                    style: const TextStyle(
+                                                                        fontWeight:
+                                                                            FontWeight.bold)),
+                                                                const SizedBox(
+                                                                    height: 6),
                                                                 Row(
-                                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .spaceBetween,
                                                                   children: [
-                                                                    Text('${p.currency} ${p.price.toStringAsFixed(0)}'),
+                                                                    Text(
+                                                                        '${p.currency} ${p.price.toStringAsFixed(0)}'),
                                                                     IconButton(
-                                                                      icon: const Icon(Icons.bookmark_remove_outlined, color: Colors.red),
-                                                                      onPressed: () async {
-                                                                        final notifier = innerRef.read(savedIdsNotifierProvider(user.uid).notifier);
-                                                                        await notifier.toggleSave(p.id);
-                                                                        innerRef.invalidate(savedProductsProvider(user.uid));
+                                                                      icon: const Icon(
+                                                                          Icons
+                                                                              .bookmark_remove_outlined,
+                                                                          color:
+                                                                              Colors.red),
+                                                                      onPressed:
+                                                                          () async {
+                                                                        final notifier =
+                                                                            innerRef.read(savedIdsNotifierProvider(user.uid).notifier);
+                                                                        await notifier
+                                                                            .toggleSave(p.id);
+                                                                        innerRef
+                                                                            .invalidate(savedProductsProvider(user.uid));
                                                                       },
                                                                     ),
                                                                   ],
@@ -363,8 +474,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                               },
                                             );
                                           },
-                                          loading: () => const Center(child: CircularProgressIndicator()),
-                                          error: (e, s) => Center(child: Text('Error: $e')),
+                                          loading: () => const Center(
+                                              child:
+                                                  CircularProgressIndicator()),
+                                          error: (e, s) =>
+                                              Center(child: Text('Error: $e')),
                                         );
                                       }),
                                     ),
@@ -375,41 +489,76 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     Align(
                                       alignment: Alignment.centerLeft,
                                       child: Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-                                        child: Text('Favorites', style: Theme.of(context).textTheme.titleMedium),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8.0, vertical: 8.0),
+                                        child: Text('Favorites',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .titleMedium),
                                       ),
                                     ),
                                     Expanded(
-                                      child: Consumer(builder: (context, innerRef, _) {
-                                        final favsAsync = innerRef.watch(favoritesSubcollectionProductsProvider(user.uid));
+                                      child: Consumer(
+                                          builder: (context, innerRef, _) {
+                                        final favsAsync = innerRef.watch(
+                                            favoritesSubcollectionProductsProvider(
+                                                user.uid));
                                         return favsAsync.when(
                                           data: (products) {
-                                            if (products.isEmpty) return const Center(child: Text('No favorites yet.'));
+                                            if (products.isEmpty)
+                                              return const Center(
+                                                  child: Text(
+                                                      'No favorites yet.'));
                                             return ListView.separated(
-                                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 12,
+                                                      horizontal: 8),
                                               itemCount: products.length,
-                                              separatorBuilder: (_, __) => const SizedBox(height: 8),
+                                              separatorBuilder: (_, __) =>
+                                                  const SizedBox(height: 8),
                                               itemBuilder: (context, index) {
                                                 final p = products[index];
                                                 return ListTile(
-                                                  leading: p.imageUrls.isNotEmpty ? Image.network(p.imageUrls.first, width: 60, height: 60, fit: BoxFit.cover) : const Icon(Icons.image_outlined),
+                                                  leading: p
+                                                          .imageUrls.isNotEmpty
+                                                      ? Image.network(
+                                                          p.imageUrls.first,
+                                                          width: 60,
+                                                          height: 60,
+                                                          fit: BoxFit.cover)
+                                                      : const Icon(
+                                                          Icons.image_outlined),
                                                   title: Text(p.name),
-                                                  subtitle: Text('${p.currency} ${p.price.toStringAsFixed(0)}'),
+                                                  subtitle: Text(
+                                                      '${p.currency} ${p.price.toStringAsFixed(0)}'),
                                                   trailing: IconButton(
-                                                      icon: const Icon(Icons.delete_outline, color: Colors.red),
-                                                      onPressed: () async {
-                                                        final notifier = innerRef.read(savedIdsNotifierProvider(user.uid).notifier);
-                                                        await notifier.toggleSave(p.id);
-                                                        innerRef.invalidate(savedProductsProvider(user.uid));
-                                                      },
+                                                    icon: const Icon(
+                                                        Icons.delete_outline,
+                                                        color: Colors.red),
+                                                    onPressed: () async {
+                                                      final notifier =
+                                                          innerRef.read(
+                                                              savedIdsNotifierProvider(
+                                                                      user.uid)
+                                                                  .notifier);
+                                                      await notifier
+                                                          .toggleSave(p.id);
+                                                      innerRef.invalidate(
+                                                          savedProductsProvider(
+                                                              user.uid));
+                                                    },
                                                   ),
                                                   onTap: () {},
                                                 );
                                               },
                                             );
                                           },
-                                          loading: () => const Center(child: CircularProgressIndicator()),
-                                          error: (e, s) => Center(child: Text('Error: $e')),
+                                          loading: () => const Center(
+                                              child:
+                                                  CircularProgressIndicator()),
+                                          error: (e, s) =>
+                                              Center(child: Text('Error: $e')),
                                         );
                                       }),
                                     ),
@@ -419,35 +568,45 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                               // More (other menu items)
                               ListView(
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
                                 children: [
                                   _MenuItem(
                                     icon: Icons.chat_outlined,
-                                    title: 'Messages',
+                                    title: localizations.messages,
                                     subtitle: 'Chat with buyers and sellers',
                                     onTap: () {
-                                      Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ChatListScreen()));
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (_) =>
+                                                  const ChatListScreen()));
                                     },
                                   ),
                                   _MenuItem(
                                     icon: Icons.location_on_outlined,
                                     title: 'Addresses',
                                     subtitle: 'Manage shipping addresses',
-                                    onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Addresses coming soon'))),
+                                    onTap: () => ScaffoldMessenger.of(context)
+                                        .showSnackBar(const SnackBar(
+                                            content:
+                                                Text('Addresses coming soon'))),
                                   ),
                                   _MenuItem(
                                     icon: Icons.help_outline,
-                                    title: 'Help & Support',
+                                    title: localizations.helpSupport,
                                     subtitle: 'Get help with your account',
-                                    onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Support coming soon'))),
+                                    onTap: () => ScaffoldMessenger.of(context)
+                                        .showSnackBar(const SnackBar(
+                                            content:
+                                                Text('Support coming soon'))),
                                   ),
                                   const Divider(height: 32),
                                   _MenuItem(
                                     icon: Icons.logout,
-                                    title: 'Sign Out',
+                                    title: localizations.signOut,
                                     subtitle: 'Sign out of your account',
                                     textColor: Colors.red,
-                                    onTap: () => _showSignOutDialog(context),
+                                    onTap: () => _showSignOutDialog(context, localizations),
                                   ),
                                 ],
                               ),
@@ -477,16 +636,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  void _showSignOutDialog(BuildContext context) {
+  void _showSignOutDialog(BuildContext context, AppLocalizations localizations) {
     showDialog(
       context: context,
       builder: (dialogCtx) => AlertDialog(
-        title: const Text('Sign Out'),
-        content: const Text('Are you sure you want to sign out?'),
+        title: Text(localizations.signOut),
+        content: Text(localizations.confirmSignOut),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogCtx).pop(),
-            child: const Text('Cancel'),
+            child: Text(localizations.cancel),
           ),
           TextButton(
             onPressed: () async {
@@ -518,7 +677,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 },
               );
             },
-            child: const Text('Sign Out', style: TextStyle(color: Colors.red)),
+            child: Text(localizations.signOut, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),

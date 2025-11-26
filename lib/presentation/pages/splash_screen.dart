@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'register_page.dart';
+import 'package:swapit_marketplace/presentation/auth/signup_page.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -166,7 +166,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                       onPressed: () {
                         Navigator.of(context).pushReplacement(
                           MaterialPageRoute(
-                            builder: (context) => const RegisterPage(),
+                            builder: (context) => const SignUpScreen(),
                           ),
                         );
                       },
