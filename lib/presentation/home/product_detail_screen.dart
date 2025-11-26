@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../data/providers/providers.dart';
+import '../../presentation/chat/chat_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../data/models/product.dart';
 import '../profile/seller_profile_screen.dart';
 import '../../data/models/cart_item.dart';
 import '../../data/utils/validators.dart';
-import '../../data/providers/providers.dart';
+// providers already imported above
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
   final ProductModel product;
@@ -586,12 +588,20 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
               }),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Message seller feature coming soon!'),
-                      ),
-                    );
+                  onPressed: () async {
+                    final currentUserId = ref.read(currentUserIdProvider);
+                    if (currentUserId == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please sign in to message sellers')));
+                      return;
+                    }
+
+                    final chatService = ref.read(chatServiceProvider);
+                    final res = await chatService.getOrCreateChat(currentUserId, product.ownerId);
+                    res.fold((failure) {
+                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(failure.message)));
+                    }, (chat) {
+                      if (mounted) Navigator.of(context).push(MaterialPageRoute(builder: (_) => ChatScreen(chatId: chat.id, otherUserId: product.ownerId)));
+                    });
                   },
                   icon: const Icon(Icons.message_outlined),
                   label: const Text('Message'),

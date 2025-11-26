@@ -217,9 +217,36 @@ class _SellerProfileScreenState extends ConsumerState<SellerProfileScreen> {
             actions: [
               TextButton(onPressed: () => Navigator.of(ctx2).pop(), child: const Text('Cancel')),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
+                  // submit rating
+                  final currentUserId = ref.read(currentUserIdProvider);
+                  final currentUserAsync = ref.read(currentUserProvider);
+                  final raterName = currentUserAsync.asData?.value?.name ?? 'User';
+
+                  if (currentUserId == null) {
+                    Navigator.of(ctx2).pop();
+                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please sign in to rate sellers')));
+                    return;
+                  }
+
                   Navigator.of(ctx2).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Thanks! You rated $selected ⭐ (UI-only)')));
+                  final reviewService = ref.read(reviewServiceProvider);
+                  final res = await reviewService.addUserRating(
+                    ratedUserId: widget.sellerId,
+                    ratedUserName: ref.read(userByIdProvider(widget.sellerId)).asData?.value?.name ?? '',
+                    raterUserId: currentUserId,
+                    raterUserName: raterName,
+                    rating: selected,
+                    review: null,
+                  );
+
+                  res.fold((failure) {
+                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(failure.message)));
+                  }, (rating) {
+                    // refresh seller data so aggregates update
+                    ref.invalidate(userByIdProvider(widget.sellerId));
+                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Thanks for your rating!')));
+                  });
                 },
                 child: const Text('Submit'),
               ),
