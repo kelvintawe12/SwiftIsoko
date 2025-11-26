@@ -37,7 +37,7 @@ void main() {
       final testUser = UserModel(
         uid: 'test-uid',
         name: 'John Doe',
-        email: 'john@example.com',
+        email: 'merukelvine@gmail.com',
         isEmailVerified: true,
         createdAt: DateTime.now(),
       );
@@ -58,7 +58,7 @@ void main() {
 
       // Assert
       expect(find.textContaining('Welcome back'), findsOneWidget);
-      expect(find.textContaining('John'), findsOneWidget);
+      expect(find.textContaining('T.K'), findsOneWidget);
     });
 
     testWidgets('HomeScreen displays categories', (WidgetTester tester) async {

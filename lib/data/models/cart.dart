@@ -52,6 +52,19 @@ class Cart {
 // Cart Model
 enum CartStatus { open, checkedOut, abandoned }
 
+extension CartStatusName on CartStatus {
+  String get name {
+    switch (this) {
+      case CartStatus.open:
+        return 'open';
+      case CartStatus.checkedOut:
+        return 'checkedOut';
+      case CartStatus.abandoned:
+        return 'abandoned';
+    }
+  }
+}
+
 class CartModel extends Equatable {
   final String id;
   final String userId;

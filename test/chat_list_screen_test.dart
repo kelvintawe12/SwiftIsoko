@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:swapit_marketplace/presentation/chat/chat_list_screen.dart';
-import 'test_helpers.dart';
 import 'package:swapit_marketplace/data/providers/providers.dart';
 import 'package:swapit_marketplace/data/models/chat.dart';
 
@@ -12,7 +11,7 @@ void main() {
 
     await tester.pumpWidget(ProviderScope(
       overrides: [
-        userChatsProvider.overrideWithProvider(StreamProvider.autoDispose((ref) => Stream.value([chat]))),
+        userChatsProvider.overrideWith((ref) => Stream.value([chat])),
         currentUserIdProvider.overrideWithValue('u1'),
       ],
       child: const MaterialApp(home: ChatListScreen()),

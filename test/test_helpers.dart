@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:swapit_marketplace/data/models/product.dart';
 import 'package:swapit_marketplace/data/models/person.dart';
 

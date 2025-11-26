@@ -12,8 +12,8 @@ void main() {
 
     await tester.pumpWidget(ProviderScope(
       overrides: [
-        userByIdProvider.overrideWithProvider(StreamProvider.family((ref, uid) => Stream.value(user))),
-        userProductsProvider.overrideWithProvider(StreamProvider.family((ref, uid) => Stream.value([product]))),
+        userByIdProvider.overrideWith((ref, uid) => Stream.value(user)),
+        userProductsProvider.overrideWith((ref, uid) => Stream.value([product])),
       ],
       child: MaterialApp(home: SellerProfileScreen(sellerId: 'seller1')),
     ));

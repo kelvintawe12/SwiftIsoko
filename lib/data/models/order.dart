@@ -69,6 +69,30 @@ class Order {
 // Order Model
 enum OrderStatus { pending, cancelled, paid }
 
+extension OrderStatusName on OrderStatus {
+  String get name {
+    switch (this) {
+      case OrderStatus.pending:
+        return 'pending';
+      case OrderStatus.cancelled:
+        return 'cancelled';
+      case OrderStatus.paid:
+        return 'paid';
+    }
+  }
+
+  String get label {
+    switch (this) {
+      case OrderStatus.pending:
+        return 'Pending';
+      case OrderStatus.cancelled:
+        return 'Cancelled';
+      case OrderStatus.paid:
+        return 'Paid';
+    }
+  }
+}
+
 class ShippingAddress extends Equatable {
   final String name;
   final String location;

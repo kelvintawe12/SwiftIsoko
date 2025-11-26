@@ -21,6 +21,36 @@ enum ProductCondition { newItem, likeNew, used, damaged }
 
 enum ProductStatus { active, incart, sold, hidden }
 
+extension ProductConditionName on ProductCondition {
+  String get name {
+    switch (this) {
+      case ProductCondition.newItem:
+        return 'newItem';
+      case ProductCondition.likeNew:
+        return 'likeNew';
+      case ProductCondition.used:
+        return 'used';
+      case ProductCondition.damaged:
+        return 'damaged';
+    }
+  }
+}
+
+extension ProductStatusName on ProductStatus {
+  String get name {
+    switch (this) {
+      case ProductStatus.active:
+        return 'active';
+      case ProductStatus.incart:
+        return 'incart';
+      case ProductStatus.sold:
+        return 'sold';
+      case ProductStatus.hidden:
+        return 'hidden';
+    }
+  }
+}
+
 class ProductModel extends Equatable {
   final String id;
   final String name;

@@ -119,15 +119,35 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                       ),
                     );
                   },
-                  child: const Text(
-                    'Join SwiftIsoko for an\nunforgettable experience',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                      height: 1.3,
-                    ),
+                  child: AnimatedBuilder(
+                    animation: _ctrl,
+                    builder: (context, _) {
+                      return ShaderMask(
+                        blendMode: BlendMode.srcATop,
+                        shaderCallback: (bounds) {
+                          final width = bounds.width;
+                          final dx = (sin(_ctrl.value * 2 * pi) * 0.5 + 0.5) * width;
+                          return LinearGradient(
+                            colors: [
+                              Colors.white.withAlpha((0.95 * 255).round()),
+                              Colors.white.withAlpha((0.35 * 255).round()),
+                              Colors.white.withAlpha((0.95 * 255).round()),
+                            ],
+                            stops: const [0.0, 0.5, 1.0],
+                          ).createShader(Rect.fromLTWH(dx - width, 0, width * 2, bounds.height));
+                        },
+                        child: Text(
+                          'Join SwiftIsoko for an\nunforgettable experience',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                            height: 1.3,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
                 const Spacer(),
