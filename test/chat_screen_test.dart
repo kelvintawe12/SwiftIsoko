@@ -12,7 +12,7 @@ void main() {
 
     await tester.pumpWidget(ProviderScope(
       overrides: [
-        chatMessagesProvider.overrideWithProvider(StreamProvider.family((ref, chatId) => Stream.value([msg]))),
+          chatMessagesProvider.overrideWithProvider(StreamProvider.autoDispose.family((ref, chatId) => Stream.value([msg]))),
         currentUserIdProvider.overrideWithValue('u1'),
       ],
       child: const MaterialApp(home: ChatScreen(chatId: 'c1', otherUserId: 'u2')),

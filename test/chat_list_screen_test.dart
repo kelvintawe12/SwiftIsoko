@@ -12,7 +12,7 @@ void main() {
 
     await tester.pumpWidget(ProviderScope(
       overrides: [
-        userChatsProvider.overrideWithProvider(StreamProvider((ref) => Stream.value([chat]))),
+        userChatsProvider.overrideWithProvider(StreamProvider.autoDispose((ref) => Stream.value([chat]))),
         currentUserIdProvider.overrideWithValue('u1'),
       ],
       child: const MaterialApp(home: ChatListScreen()),
