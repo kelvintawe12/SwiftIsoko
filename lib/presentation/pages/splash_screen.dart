@@ -2,8 +2,41 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'register_page.dart';
 
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _scaleAnim;
+  late final Animation<double> _rotAnim;
+  late final Animation<double> _fadeAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(seconds: 3));
+    _scaleAnim = Tween<double>(begin: 0.96, end: 1.04).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
+    _rotAnim = Tween<double>(begin: -0.02, end: 0.02).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
+    _fadeAnim = Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(parent: _ctrl, curve: const Interval(0.4, 1.0, curve: Curves.easeIn)));
+    _ctrl.addStatusListener((s) {
+      if (s == AnimationStatus.completed) {
+        _ctrl.reverse();
+      } else if (s == AnimationStatus.dismissed) {
+        _ctrl.forward();
+      }
+    });
+    _ctrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,56 +58,96 @@ class SplashScreen extends StatelessWidget {
             child: Column(
               children: [
                 const Spacer(flex: 2),
-                // Logo and circular avatars section
+                // Animated logo section
                 SizedBox(
                   height: 400,
                   child: Center(
-                    child: Image.asset(
-                      'assets/images/round.png',
-                      width: 400,
-                      height: 400,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ),
-                const Spacer(),
-                // Title text
-                const Text(
-                  'Join SwiftIsoko for an\nunforgettable experience',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    height: 1.3,
-                  ),
-                ),
-                const Spacer(),
-                // Get Started button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => const RegisterPage(),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF6C63E8),
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                    child: AnimatedBuilder(
+                      animation: _ctrl,
+                      builder: (context, child) {
+                        return Transform.rotate(
+                          angle: _rotAnim.value,
+                          child: Transform.scale(
+                            scale: _scaleAnim.value,
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // subtle concentric background circles (reuse painter)
+                          SizedBox(
+                            width: 300,
+                            height: 300,
+                            child: CustomPaint(
+                              painter: ConcentricCirclesPainter(),
+                            ),
+                          ),
+                          Image.asset(
+                            'assets/images/round.png',
+                            width: 260,
+                            height: 260,
+                            fit: BoxFit.contain,
+                          ),
+                        ],
                       ),
-                      elevation: 0,
                     ),
-                    child: const Text(
-                      'Get Started',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                // Title text with fade
+                FadeTransition(
+                  opacity: _fadeAnim,
+                  child: const Text(
+                    'Join SwiftIsoko for an\nunforgettable experience',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                      height: 1.3,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                // Get Started button with fade and slide up
+                AnimatedBuilder(
+                  animation: _fadeAnim,
+                  builder: (context, child) {
+                    return Opacity(
+                      opacity: _fadeAnim.value,
+                      child: Transform.translate(
+                        offset: Offset(0, 20 * (1 - _fadeAnim.value)),
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (context) => const RegisterPage(),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: const Color(0xFF6C63E8),
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        'Get Started',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),

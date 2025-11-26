@@ -2,6 +2,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'core/constants/colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'bloc/cart/cart_bloc.dart';
 import 'package:swapit_marketplace/presentation/pages/splash_screen.dart';
 import 'firebase_options.dart';
 
@@ -20,8 +22,11 @@ void main() async {
   }
 
   runApp(
-    const ProviderScope(
-      child: SwiftIsokoApp(),
+    ProviderScope(
+      child: BlocProvider(
+        create: (_) => CartBloc(),
+        child: const SwiftIsokoApp(),
+      ),
     ),
   );
 }

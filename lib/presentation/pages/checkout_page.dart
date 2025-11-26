@@ -43,20 +43,17 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Shipping Information Section
             _buildSectionHeader('Shipping information', 'Edit', () {}),
             const SizedBox(height: 12),
             _buildAddressCard(),
             const SizedBox(height: 24),
 
-            // Payment Method Section
             _buildSectionHeader('Payment method', 'Add a card', () {}),
             const SizedBox(height: 12),
             _buildPaymentOption(
               'Momo Pay',
               icon: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade200,
                   borderRadius: BorderRadius.circular(8),
@@ -95,25 +92,23 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
             ),
             const SizedBox(height: 24),
 
-            // Shipping Method Section
             _buildSectionHeader('Shipping method', null, null),
             const SizedBox(height: 12),
             _buildShippingOption(
               'Express',
               r'+$2',
-              'Estimate delivery time:14 July.2023',
+              'Estimate delivery time: 14 July, 2023',
               value: 'express',
             ),
             const SizedBox(height: 12),
             _buildShippingOption(
               'Standard',
               null,
-              'Estimate delivery time:15 July. 2023',
+              'Estimate delivery time: 15 July, 2023',
               value: 'standard',
             ),
             const SizedBox(height: 24),
 
-            // Disclaimer
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),
               child: Text(
@@ -127,7 +122,6 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
             ),
             const SizedBox(height: 32),
 
-            // Place Order Button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -139,15 +133,16 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                         final userId = ref.read(currentUserIdProvider);
                         if (userId == null) {
                           setState(() => _isPlacing = false);
+                          if (!mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                               content: Text('You must be signed in to place an order')));
                           return;
                         }
 
-                        // Get or create cart
                         final cartResult = await ref.read(currentUserCartProvider.future);
                         if (cartResult == null) {
                           setState(() => _isPlacing = false);
+                          if (!mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                               content: Text('No cart found for current user')));
                           return;
@@ -168,12 +163,14 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
 
                         setState(() => _isPlacing = false);
 
-                        res.fold((failure) {
+                        res.fold((failure) async {
+                          if (!mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             content: Text(failure.message),
                             backgroundColor: Colors.red,
                           ));
-                        }, (order) {
+                        }, (order) async {
+                          if (!mounted) return;
                           Navigator.of(context).pushReplacement(
                             MaterialPageRoute(builder: (_) => ThankYouPage(orderId: order.id)),
                           );
@@ -204,8 +201,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     );
   }
 
-  Widget _buildSectionHeader(
-      String title, String? actionText, VoidCallback? onAction) {
+  Widget _buildSectionHeader(String title, String? actionText, VoidCallback? onAction) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -246,7 +242,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withAlpha((0.03 * 255).round()),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -299,8 +295,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     );
   }
 
-  Widget _buildPaymentOption(String title,
-      {required Widget icon, required String value}) {
+  Widget _buildPaymentOption(String title, {required Widget icon, required String value}) {
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -314,7 +309,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withAlpha((0.03 * 255).round()),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -334,24 +329,14 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                 ),
               ),
             ),
-            Radio<String>(
-              value: value,
-              groupValue: _selectedPaymentMethod,
-              onChanged: (val) {
-                setState(() {
-                  _selectedPaymentMethod = val;
-                });
-              },
-              activeColor: AppColors.primary,
-            ),
+            _selectionIndicator(_selectedPaymentMethod == value),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildShippingOption(String title, String? price, String deliveryTime,
-      {required String value}) {
+  Widget _buildShippingOption(String title, String? price, String deliveryTime, {required String value}) {
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -365,7 +350,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withAlpha((0.03 * 255).round()),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -373,16 +358,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         ),
         child: Row(
           children: [
-            Radio<String>(
-              value: value,
-              groupValue: _selectedShippingMethod,
-              onChanged: (val) {
-                setState(() {
-                  _selectedShippingMethod = val;
-                });
-              },
-              activeColor: AppColors.primary,
-            ),
+            _selectionIndicator(_selectedShippingMethod == value),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -395,9 +371,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
-                          color: price != null
-                              ? AppColors.primary
-                              : AppColors.textDark,
+                          color: price != null ? AppColors.primary : AppColors.textDark,
                         ),
                       ),
                       if (price != null) ...[
@@ -427,6 +401,32 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _selectionIndicator(bool selected) {
+    return Container(
+      width: 22,
+      height: 22,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: selected ? AppColors.primary : Colors.grey.shade400, width: 2),
+        color: selected ? AppColors.primary : Colors.transparent,
+      ),
+      child: selected
+          ? const Center(
+              child: SizedBox(
+                width: 10,
+                height: 10,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            )
+          : null,
     );
   }
 }

@@ -86,9 +86,9 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   }
 
   Future<void> _showResetPasswordDialog() async {
-    final _resetController = TextEditingController(text: _emailController.text);
-    final _formKeyReset = GlobalKey<FormState>();
-    bool _sending = false;
+    final resetController = TextEditingController(text: _emailController.text);
+    final formKeyReset = GlobalKey<FormState>();
+    bool sending = false;
 
     await showDialog<void>(
       context: context,
@@ -97,9 +97,9 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
           return AlertDialog(
             title: const Text('Reset Password'),
             content: Form(
-              key: _formKeyReset,
+              key: formKeyReset,
               child: TextFormField(
-                controller: _resetController,
+                controller: resetController,
                 keyboardType: TextInputType.emailAddress,
                 decoration: const InputDecoration(
                   labelText: 'Email',
@@ -110,19 +110,19 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
             ),
             actions: [
               TextButton(
-                onPressed: _sending ? null : () => Navigator.of(context).pop(),
+                onPressed: sending ? null : () => Navigator.of(context).pop(),
                 child: const Text('Cancel'),
               ),
               ElevatedButton(
-                onPressed: _sending
+                onPressed: sending
                     ? null
                     : () async {
-                        if (!_formKeyReset.currentState!.validate()) return;
-                        setState(() => _sending = true);
+                        if (!formKeyReset.currentState!.validate()) return;
+                        setState(() => sending = true);
                         final authNotifier = ref.read(authNotifierProvider.notifier);
-                        final res = await authNotifier.resetPassword(_resetController.text.trim());
+                        final res = await authNotifier.resetPassword(resetController.text.trim());
                         if (!mounted) return;
-                        setState(() => _sending = false);
+                        setState(() => sending = false);
                         res.fold((failure) {
                           Navigator.of(context).pop();
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -135,7 +135,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                           );
                         });
                       },
-                child: _sending
+                child: sending
                     ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
                     : const Text('Send'),
               ),
