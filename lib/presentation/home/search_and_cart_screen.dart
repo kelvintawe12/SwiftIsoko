@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../pages/checkout_page.dart';
 import '../../data/providers/providers.dart';
 import '../../data/models/cart_item.dart';
 import '../../data/models/product.dart';
@@ -430,10 +431,8 @@ class CartScreen extends ConsumerWidget {
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Checkout feature coming soon'),
-                              ),
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (_) => const CheckoutPage()),
                             );
                           },
                           style: ElevatedButton.styleFrom(

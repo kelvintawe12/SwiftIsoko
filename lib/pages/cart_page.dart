@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../presentation/pages/checkout_page.dart';
 import '../bloc/cart/cart_bloc.dart';
  
 import '../../core/constants/colors.dart';
@@ -133,8 +134,10 @@ class CartPage extends StatelessWidget {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () {
-                          context.read<CartBloc>().add(ClearCart());
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Proceeding to checkout (mock)')));
+                          // Navigate to checkout page
+                          Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const CheckoutPage()),
+                          );
                         },
                         style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
                         child: const Text('Proceed to Checkout', style: TextStyle(fontSize: 16)),
