@@ -7,20 +7,33 @@ import 'package:swapit_marketplace/presentation/home/home_screen.dart';
 import 'package:swapit_marketplace/data/models/product.dart';
 import 'package:swapit_marketplace/data/models/person.dart';
 import 'package:swapit_marketplace/data/providers/providers.dart';
+import 'test_fakes.dart';
 
 void main() {
   group('HomeScreen Widget Tests', () {
+    setUpAll(() {
+      configureLargeTestWindow();
+    });
+
+    tearDownAll(() {
+      clearTestWindow();
+    });
     testWidgets('HomeScreen displays app title "SwiftIsoko"',
         (WidgetTester tester) async {
       // Arrange
       await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            currentUserProvider.overrideWith((ref) => Stream.value(null)),
-            productsStreamProvider.overrideWith((ref) => Stream.value([])),
-            heroProductsProvider.overrideWith((ref) => Stream.value([])),
-          ],
-          child: const MaterialApp(home: HomeScreen()),
+        MediaQuery(
+          data: const MediaQueryData(size: Size(1280, 800)),
+          child: ProviderScope(
+            overrides: [
+              currentUserProvider.overrideWith((ref) => Stream.value(null)),
+              productsStreamProvider.overrideWith((ref) => Stream.value([])),
+              heroProductsProvider.overrideWith((ref) => Stream.value([])),
+              productServiceProvider.overrideWithValue(FakeProductService()),
+              cloudinaryServiceProvider.overrideWithValue(FakeCloudinaryService()),
+            ],
+            child: const MaterialApp(home: HomeScreen()),
+          ),
         ),
       );
 
@@ -43,13 +56,18 @@ void main() {
       );
 
       await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            currentUserProvider.overrideWith((ref) => Stream.value(testUser)),
-            productsStreamProvider.overrideWith((ref) => Stream.value([])),
-            heroProductsProvider.overrideWith((ref) => Stream.value([])),
-          ],
-          child: const MaterialApp(home: HomeScreen()),
+        MediaQuery(
+          data: const MediaQueryData(size: Size(1280, 800)),
+          child: ProviderScope(
+            overrides: [
+              currentUserProvider.overrideWith((ref) => Stream.value(testUser)),
+              productsStreamProvider.overrideWith((ref) => Stream.value([])),
+              heroProductsProvider.overrideWith((ref) => Stream.value([])),
+              productServiceProvider.overrideWithValue(FakeProductService()),
+              cloudinaryServiceProvider.overrideWithValue(FakeCloudinaryService()),
+            ],
+            child: const MaterialApp(home: HomeScreen()),
+          ),
         ),
       );
 
@@ -58,19 +76,24 @@ void main() {
 
       // Assert
       expect(find.textContaining('Welcome back'), findsOneWidget);
-      expect(find.textContaining('T.K'), findsOneWidget);
+      expect(find.textContaining('John'), findsOneWidget);
     });
 
     testWidgets('HomeScreen displays categories', (WidgetTester tester) async {
       // Arrange
       await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            currentUserProvider.overrideWith((ref) => Stream.value(null)),
-            productsStreamProvider.overrideWith((ref) => Stream.value([])),
-            heroProductsProvider.overrideWith((ref) => Stream.value([])),
-          ],
-          child: const MaterialApp(home: HomeScreen()),
+        MediaQuery(
+          data: const MediaQueryData(size: Size(1280, 800)),
+          child: ProviderScope(
+            overrides: [
+              currentUserProvider.overrideWith((ref) => Stream.value(null)),
+              productsStreamProvider.overrideWith((ref) => Stream.value([])),
+              heroProductsProvider.overrideWith((ref) => Stream.value([])),
+              productServiceProvider.overrideWithValue(FakeProductService()),
+              cloudinaryServiceProvider.overrideWithValue(FakeCloudinaryService()),
+            ],
+            child: const MaterialApp(home: HomeScreen()),
+          ),
         ),
       );
 
@@ -147,15 +170,18 @@ void main() {
       ];
 
       await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            currentUserProvider.overrideWith((ref) => Stream.value(null)),
-            productsStreamProvider
-                .overrideWith((ref) => Stream.value(testProducts)),
-            heroProductsProvider
-                .overrideWith((ref) => Stream.value(testProducts)),
-          ],
-          child: const MaterialApp(home: HomeScreen()),
+        MediaQuery(
+          data: const MediaQueryData(size: Size(1280, 800)),
+          child: ProviderScope(
+            overrides: [
+              currentUserProvider.overrideWith((ref) => Stream.value(null)),
+              productsStreamProvider.overrideWith((ref) => Stream.value(testProducts)),
+              heroProductsProvider.overrideWith((ref) => Stream.value(testProducts)),
+              productServiceProvider.overrideWithValue(FakeProductService()),
+              cloudinaryServiceProvider.overrideWithValue(FakeCloudinaryService()),
+            ],
+            child: const MaterialApp(home: HomeScreen()),
+          ),
         ),
       );
 
