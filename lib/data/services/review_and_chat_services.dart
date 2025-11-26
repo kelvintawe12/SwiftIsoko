@@ -240,13 +240,17 @@ class ChatService {
 
   // Get user chats
   Stream<List<ChatModel>> getUserChats(String userId) {
+    // Avoid server-side composite index requirement by sorting client-side.
+    // This returns matching chat documents and sorts them by `lastMessageAt`.
     return _firestore
         .collection('chats')
         .where('participants', arrayContains: userId)
-        .orderBy('lastMessageAt', descending: true)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => ChatModel.fromFirestore(doc)).toList());
+        .map((snapshot) {
+      final list = snapshot.docs.map((doc) => ChatModel.fromFirestore(doc)).toList();
+      list.sort((a, b) => b.lastMessageAt.compareTo(a.lastMessageAt));
+      return list;
+    });
   }
 
   // Get chat messages
