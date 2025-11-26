@@ -1,4 +1,4 @@
-# SwapIt Marketplace (Flutter)
+# SwiftIsoko Marketplace (Flutter)
 
 This is a scaffolded Flutter project matching the UI and structure you provided.
 
